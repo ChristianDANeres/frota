@@ -14,6 +14,7 @@ Flask-Login
 Flask-WTF
 WTForms
 wtforms-sqlalchemy
+WTForms-SQLAlchemy==0.4.2
 gunicorn
 psycopg2-binary
 python-dotenv
