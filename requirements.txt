@@ -8,3 +8,12 @@ python-dotenv==1.0.1
 gunicorn==22.0.0
 email-validator==2.1.1
 Pillow>=10.0.0
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Flask-WTF
+WTForms
+wtforms-sqlalchemy
+gunicorn
+psycopg2-binary
+python-dotenv
