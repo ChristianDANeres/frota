@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{{ 'Editar' if obj else 'Novo' }} Abastecimento{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">{{ 'Editar' if obj else 'Novo' }} Abastecimento</h4>
+    <a href="{{ url_for('abastecimento.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    {{ form.data.label(class='form-label') }}
+                    {{ form.data(class='form-control' + (' is-invalid' if form.data.errors else ''), type='date') }}
+                    {% for erro in form.data.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.veiculo_id.label(class='form-label') }}
+                    {{ form.veiculo_id(class='form-select' + (' is-invalid' if form.veiculo_id.errors else '')) }}
+                    {% for erro in form.veiculo_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-5 mb-3">
+                    {{ form.motorista_id.label(class='form-label') }}
+                    {{ form.motorista_id(class='form-select' + (' is-invalid' if form.motorista_id.errors else '')) }}
+                    {% for erro in form.motorista_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.km.label(class='form-label') }}
+                    {{ form.km(class='form-control' + (' is-invalid' if form.km.errors else '')) }}
+                    {% for erro in form.km.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.quantidade.label(class='form-label') }}
+                    {{ form.quantidade(class='form-control' + (' is-invalid' if form.quantidade.errors else '')) }}
+                    {% for erro in form.quantidade.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.valor.label(class='form-label') }}
+                    {{ form.valor(class='form-control' + (' is-invalid' if form.valor.errors else '')) }}
+                    {% for erro in form.valor.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Salvar
+                </button>
+                <a href="{{ url_for('abastecimento.listar') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

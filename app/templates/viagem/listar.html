@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Listagem de Viagens{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Viagens</h4>
+    <a href="{{ url_for('viagem.novo') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nova Viagem
+    </a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Destino</th>
+                    <th>Veículo</th>
+                    <th>Motorista</th>
+                    <th>Status</th>
+                    <th>Data Inicial</th>
+                    <th>Data Final</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in registros %}
+                <tr>
+                    <td>{{ obj.destino }}</td>
+                    <td>{{ obj.veiculo.placa if obj.veiculo else '-' }}</td>
+                    <td>{{ obj.motorista.nome if obj.motorista else '-' }}</td>
+                    <td>
+                        {% if obj.status == 'EM_ABERTO' %}
+                        <span class="badge-em-aberto">Em Aberto</span>
+                        {% elif obj.status == 'INICIADA' %}
+                        <span class="badge-iniciada">Iniciada</span>
+                        {% elif obj.status == 'FINALIZADA' %}
+                        <span class="badge-finalizada">Finalizada</span>
+                        {% else %}
+                        {{ obj.status }}
+                        {% endif %}
+                    </td>
+                    <td>{{ obj.data_inicial.strftime('%d/%m/%Y %H:%M') if obj.data_inicial else '-' }}</td>
+                    <td>{{ obj.data_final.strftime('%d/%m/%Y %H:%M') if obj.data_final else '-' }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('viagem.pacientes', id=obj.id) }}" class="btn btn-sm btn-outline-secondary" title="Pacientes">
+                            <i class="bi bi-people"></i>
+                        </a>
+                        <a href="{{ url_for('viagem.visualizar', id=obj.id) }}" class="btn btn-sm btn-outline-info" title="Visualizar">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{{ url_for('viagem.editar', id=obj.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{{ url_for('viagem.excluir', id=obj.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir"
+                                onclick="return confirm('Deseja excluir esta viagem?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-3">Nenhuma viagem cadastrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

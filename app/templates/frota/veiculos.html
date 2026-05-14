@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h4 class="fw-bold">Veículos</h4>
+    <p class="text-muted">CRUD inicial do módulo FROTA. A tabela já está preparada com cliente_id.</p>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>Placa</th><th>Descrição</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Ativo</th></tr></thead>
+        <tbody>
+        {% for v in veiculos %}
+          <tr><td>{{ v.placa }}</td><td>{{ v.descricao }}</td><td>{{ v.marca }}</td><td>{{ v.modelo }}</td><td>{{ v.ano }}</td><td>{{ 'Sim' if v.ativo else 'Não' }}</td></tr>
+        {% else %}<tr><td colspan="6" class="text-muted">Nenhum veículo cadastrado.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

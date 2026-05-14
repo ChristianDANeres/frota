@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Visualizar Cliente{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Detalhes do Cliente</h4>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('adm.cliente_editar', id=obj.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('adm.clientes') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Nome</dt>
+                    <dd class="col-sm-8">{{ obj.nome }}</dd>
+
+                    <dt class="col-sm-4">CNPJ</dt>
+                    <dd class="col-sm-8">{{ obj.cnpj or '-' }}</dd>
+
+                    <dt class="col-sm-4">E-mail</dt>
+                    <dd class="col-sm-8">{{ obj.email or '-' }}</dd>
+
+                    <dt class="col-sm-4">Telefone</dt>
+                    <dd class="col-sm-8">{{ obj.telefone or '-' }}</dd>
+
+                    <dt class="col-sm-4">Endereço</dt>
+                    <dd class="col-sm-8">{{ obj.endereco or '-' }}</dd>
+
+                    <dt class="col-sm-4">Município</dt>
+                    <dd class="col-sm-8">{{ obj.municipio or '-' }}</dd>
+
+                    <dt class="col-sm-4">Responsável</dt>
+                    <dd class="col-sm-8">{{ obj.responsavel or '-' }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-6 d-flex align-items-start gap-3">
+                {% if obj.logo_esquerdo %}
+                <div>
+                    <div class="small text-muted">Logo Relatório (esquerdo)</div>
+                    <img src="{{ url_for('static', filename=obj.logo_esquerdo) }}" alt="Logo esquerdo" style="max-height:120px; display:block;">
+                </div>
+                {% endif %}
+                {% if obj.logo_direito %}
+                <div>
+                    <div class="small text-muted">Logo Relatório (direito)</div>
+                    <img src="{{ url_for('static', filename=obj.logo_direito) }}" alt="Logo direito" style="max-height:120px; display:block;">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

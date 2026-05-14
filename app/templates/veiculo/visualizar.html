@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Visualizar Veículo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Detalhes do Veículo</h4>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('veiculo.editar', id=obj.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('veiculo.listar') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Placa</dt>
+            <dd class="col-sm-9">{{ obj.placa }}</dd>
+
+            <dt class="col-sm-3">Modelo</dt>
+            <dd class="col-sm-9">{{ obj.modelo }}</dd>
+
+            <dt class="col-sm-3">Montadora</dt>
+            <dd class="col-sm-9">{{ obj.montadora.nome if obj.montadora else '-' }}</dd>
+
+            <dt class="col-sm-3">Cor</dt>
+            <dd class="col-sm-9">{{ obj.cor.nome if obj.cor else '-' }}</dd>
+
+            <dt class="col-sm-3">Ano de Fabricação</dt>
+            <dd class="col-sm-9">{{ obj.ano_fabricacao or '-' }}</dd>
+
+            <dt class="col-sm-3">Tipo de Combustível</dt>
+            <dd class="col-sm-9">{{ obj.tipo_combustivel or '-' }}</dd>
+
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">{{ obj.status_veiculo.nome if obj.status_veiculo else '-' }}</dd>
+
+            <dt class="col-sm-3">Ativo</dt>
+            <dd class="col-sm-9">
+                <span class="{{ 'badge-ativo' if obj.ativo else 'badge-inativo' }}">
+                    {{ 'Ativo' if obj.ativo else 'Inativo' }}
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Criado em</dt>
+            <dd class="col-sm-9">{{ obj.criado_em.strftime('%d/%m/%Y %H:%M') if obj.criado_em else '-' }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

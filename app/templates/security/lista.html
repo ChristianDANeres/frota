@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h4 class="fw-bold">{{ titulo }}</h4>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead><tr><th>ID</th><th>Nome / Código</th><th>Ativo</th></tr></thead>
+        <tbody>
+        {% for r in registros %}
+          <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.nome if r.nome is defined else r.username }}</td>
+            <td>{{ 'Sim' if r.ativo else 'Não' }}</td>
+          </tr>
+        {% else %}<tr><td colspan="3" class="text-muted">Nenhum registro encontrado.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Pacientes — {{ obj.destino }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+        <i class="bi bi-people"></i>
+        Pacientes — {{ obj.destino }}
+        <small class="text-muted fs-6 ms-2">{{ obj.veiculo.placa if obj.veiculo else '' }}</small>
+    </h4>
+    <a href="{{ url_for('viagem.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4" id="pacientes">
+    <div class="card-header fw-semibold">Pacientes da Viagem</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Nome da Mãe</th>
+                    <th>Data de Nasc.</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pacientes %}
+                <tr>
+                    <td>{{ p.nome }}</td>
+                    <td>{{ p.cpf or '-' }}</td>
+                    <td>{{ p.nome_mae or '-' }}</td>
+                    <td>{{ p.data_nascimento.strftime('%d/%m/%Y') if p.data_nascimento else '-' }}</td>
+                    <td class="text-end">
+                        <form action="{{ url_for('viagem.excluir_paciente', id=obj.id, pac_id=p.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover"
+                                onclick="return confirm('Deseja remover este paciente da viagem?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">Nenhum paciente adicionado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold">Adicionar Paciente</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('viagem.pacientes', id=obj.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="cpf" class="form-label">CPF</label>
+                    <input type="text" name="cpf" id="cpf" class="form-control" placeholder="000.000.000-00">
+                </div>
+                <div class="col-md-5 mb-3">
+                    <label for="nome" class="form-label">Nome</label>
+                    <input type="text" name="nome" id="nome" class="form-control">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="nome_mae" class="form-label">Nome da Mãe</label>
+                    <input type="text" name="nome_mae" id="nome_mae" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="data_nascimento" class="form-label">Data de Nascimento</label>
+                    <input type="text" name="data_nascimento" id="data_nascimento" class="form-control" placeholder="DD/MM/AAAA" maxlength="10" autocomplete="off">
+                </div>
+                <div class="col-md-3 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('data_nascimento').addEventListener('input', function (e) {
+    let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+    if (v.length >= 5) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+    else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+    e.target.value = v;
+});
+</script>
+{% endblock %}

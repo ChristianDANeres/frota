@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block page_title %}Montadoras{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h4><i class="bi bi-truck me-2"></i>Montadoras</h4>
+  <a href="{{ url_for('montadora.novo') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i> Nova</a>
+</div>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>{{ registros|length }} registro(s)</span>
+    <form class="d-flex gap-2" method="get">
+      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Buscar...">
+      <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Nome</th><th>Ativo</th><th style="width:130px">Ações</th></tr></thead>
+      <tbody>
+        {% for obj in registros %}
+        <tr>
+          <td>{{ obj.nome }}</td>
+          <td><span class="{{ 'badge-ativo' if obj.ativo else 'badge-inativo' }}">{{ 'Ativo' if obj.ativo else 'Inativo' }}</span></td>
+          <td>
+            <a href="{{ url_for('montadora.visualizar', id=obj.id) }}" class="btn btn-sm btn-outline-info" title="Visualizar"><i class="bi bi-eye"></i></a>
+            <a href="{{ url_for('montadora.editar', id=obj.id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{{ url_for('montadora.excluir', id=obj.id) }}" class="d-inline" onsubmit="return confirm('Inativar?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger" title="Inativar"><i class="bi bi-slash-circle"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}<tr><td colspan="3" class="text-center text-muted py-4">Nenhum registro encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

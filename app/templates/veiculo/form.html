@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{{ 'Editar' if obj else 'Novo' }} Veículo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">{{ 'Editar' if obj else 'Novo' }} Veículo</h4>
+    <a href="{{ url_for('veiculo.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.placa.label(class='form-label') }}
+                    {{ form.placa(class='form-control' + (' is-invalid' if form.placa.errors else '')) }}
+                    {% for erro in form.placa.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.montadora_id.label(class='form-label') }}
+                    {{ form.montadora_id(class='form-select' + (' is-invalid' if form.montadora_id.errors else '')) }}
+                    {% for erro in form.montadora_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.modelo.label(class='form-label') }}
+                    {{ form.modelo(class='form-control' + (' is-invalid' if form.modelo.errors else '')) }}
+                    {% for erro in form.modelo.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.cor_id.label(class='form-label') }}
+                    {{ form.cor_id(class='form-select' + (' is-invalid' if form.cor_id.errors else '')) }}
+                    {% for erro in form.cor_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.ano_fabricacao.label(class='form-label') }}
+                    {{ form.ano_fabricacao(class='form-control' + (' is-invalid' if form.ano_fabricacao.errors else '')) }}
+                    {% for erro in form.ano_fabricacao.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.tipo_combustivel.label(class='form-label') }}
+                    {{ form.tipo_combustivel(class='form-select' + (' is-invalid' if form.tipo_combustivel.errors else '')) }}
+                    {% for erro in form.tipo_combustivel.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.status_veiculo_id.label(class='form-label') }}
+                    {{ form.status_veiculo_id(class='form-select' + (' is-invalid' if form.status_veiculo_id.errors else '')) }}
+                    {% for erro in form.status_veiculo_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3 d-flex align-items-end">
+                    <div class="form-check">
+                        {{ form.ativo(class='form-check-input') }}
+                        {{ form.ativo.label(class='form-check-label') }}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Salvar
+                </button>
+                <a href="{{ url_for('veiculo.listar') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

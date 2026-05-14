@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Visualizar Tipo de Viagem{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Detalhes do Tipo de Viagem</h4>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('tipo_viagem.editar', id=obj.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('tipo_viagem.listar') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Nome</dt>
+            <dd class="col-sm-9">{{ obj.nome }}</dd>
+
+            <dt class="col-sm-3">Descrição</dt>
+            <dd class="col-sm-9">{{ obj.descricao or '-' }}</dd>
+
+            <dt class="col-sm-3">Ativo</dt>
+            <dd class="col-sm-9">
+                <span class="{{ 'badge-ativo' if obj.ativo else 'badge-inativo' }}">
+                    {{ 'Ativo' if obj.ativo else 'Inativo' }}
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Criado em</dt>
+            <dd class="col-sm-9">{{ obj.criado_em.strftime('%d/%m/%Y %H:%M') if obj.criado_em else '-' }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Visualizar Abastecimento{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Detalhes do Abastecimento</h4>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('abastecimento.anexos', id=obj.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-paperclip"></i> Anexos
+        </a>
+        <a href="{{ url_for('abastecimento.editar', id=obj.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('abastecimento.listar') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Data</dt>
+            <dd class="col-sm-9">{{ obj.data.strftime('%d/%m/%Y') if obj.data else '-' }}</dd>
+
+            <dt class="col-sm-3">Veículo</dt>
+            <dd class="col-sm-9">{{ obj.veiculo.placa if obj.veiculo else '-' }}</dd>
+
+            <dt class="col-sm-3">Motorista</dt>
+            <dd class="col-sm-9">{{ obj.motorista.nome if obj.motorista else '-' }}</dd>
+
+            <dt class="col-sm-3">KM</dt>
+            <dd class="col-sm-9">{{ obj.km }}</dd>
+
+            <dt class="col-sm-3">Quantidade (L)</dt>
+            <dd class="col-sm-9">{{ obj.quantidade }}</dd>
+
+            <dt class="col-sm-3">Valor</dt>
+            <dd class="col-sm-9">R$ {{ '%.2f' % obj.valor if obj.valor else '-' }}</dd>
+
+            <dt class="col-sm-3">Criado em</dt>
+            <dd class="col-sm-9">{{ obj.criado_em.strftime('%d/%m/%Y %H:%M') if obj.criado_em else '-' }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

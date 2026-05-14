@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{{ 'Editar' if obj else 'Nova' }} Viagem{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">{{ 'Editar' if obj else 'Nova' }} Viagem</h4>
+    <a href="{{ url_for('viagem.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.veiculo_id.label(class='form-label') }}
+                    {{ form.veiculo_id(class='form-select' + (' is-invalid' if form.veiculo_id.errors else '')) }}
+                    {% for erro in form.veiculo_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.motorista_id.label(class='form-label') }}
+                    {{ form.motorista_id(class='form-select' + (' is-invalid' if form.motorista_id.errors else '')) }}
+                    {% for erro in form.motorista_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.tipo_viagem_id.label(class='form-label') }}
+                    {{ form.tipo_viagem_id(class='form-select' + (' is-invalid' if form.tipo_viagem_id.errors else '')) }}
+                    {% for erro in form.tipo_viagem_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mb-3">
+                {{ form.destino.label(class='form-label') }}
+                {{ form.destino(class='form-control' + (' is-invalid' if form.destino.errors else '')) }}
+                {% for erro in form.destino.errors %}
+                <div class="invalid-feedback">{{ erro }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.descricao.label(class='form-label') }}
+                {{ form.descricao(class='form-control' + (' is-invalid' if form.descricao.errors else ''), rows=3) }}
+                {% for erro in form.descricao.errors %}
+                <div class="invalid-feedback">{{ erro }}</div>
+                {% endfor %}
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    {{ form.km_inicial.label(class='form-label') }}
+                    {{ form.km_inicial(class='form-control' + (' is-invalid' if form.km_inicial.errors else '')) }}
+                    {% for erro in form.km_inicial.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.km_final.label(class='form-label') }}
+                    {{ form.km_final(class='form-control' + (' is-invalid' if form.km_final.errors else '')) }}
+                    {% for erro in form.km_final.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.status.label(class='form-label') }}
+                    {{ form.status(class='form-select' + (' is-invalid' if form.status.errors else '')) }}
+                    {% for erro in form.status.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.data_inicial.label(class='form-label') }}
+                    <input type="datetime-local"
+                           id="{{ form.data_inicial.id }}"
+                           name="{{ form.data_inicial.name }}"
+                           class="form-control{% if form.data_inicial.errors %} is-invalid{% endif %}"
+                           value="{{ form.data_inicial.data.strftime('%Y-%m-%dT%H:%M') if form.data_inicial.data else '' }}">
+                    {% for erro in form.data_inicial.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.data_final.label(class='form-label') }}
+                    <input type="datetime-local"
+                           id="{{ form.data_final.id }}"
+                           name="{{ form.data_final.name }}"
+                           class="form-control{% if form.data_final.errors %} is-invalid{% endif %}"
+                           value="{{ form.data_final.data.strftime('%Y-%m-%dT%H:%M') if form.data_final.data else '' }}">
+                    {% for erro in form.data_final.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Salvar
+                </button>
+                <a href="{{ url_for('viagem.listar') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

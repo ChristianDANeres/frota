@@ -1,0 +1,27 @@
+{% macro listar_simples(titulo, registros, blueprint, q, cols) %}
+{% extends 'base.html' %}
+{% block page_title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h4><i class="bi bi-list-ul me-2"></i>{{ titulo }}</h4>
+  <a href="{{ url_for(blueprint ~ '.novo') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> Novo
+  </a>
+</div>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Registros encontrados: {{ registros|length }}</span>
+    <form class="d-flex gap-2" method="get">
+      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Buscar...">
+      <button class="btn btn-sm btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr>{{ cols }}<th>Ativo</th><th style="width:130px">Ações</th></tr></thead>
+      <tbody>{{ caller() }}</tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% endmacro %}
