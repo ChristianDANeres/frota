@@ -25,7 +25,7 @@
   {% if current_user.is_authenticated %}
     {% set menus_sidebar = menus_nav | default([]) %}
 
-    {% set grupo_frota = ['veiculo','motorista','viagem','abastecimento'] %}
+    {% set grupo_frota = ['veiculo','motorista','viagem','abastecimento','oficina','veiculo_oficina'] %}
     {% set grupo_tabelas = ['montadora','cor','tipo_arquivo','tipo_viagem','status_veiculo'] %}
     {% set grupo_adm = ['adm'] %}
 
@@ -66,6 +66,9 @@
     </a>
     <a href="{{ url_for('adm.menus') }}" class="nav-link {% if request.blueprint == 'adm' and 'menu' in request.endpoint %}active{% endif %}">
       <i class="bi bi-list-check"></i> Menus
+    </a>
+    <a href="{{ url_for('oficina.listar') }}" class="nav-link {% if request.blueprint == 'oficina' %}active{% endif %}">
+      <i class="bi bi-wrench"></i> Oficinas
     </a>
     {% endif %}
   {% endif %}

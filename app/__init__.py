@@ -6,6 +6,9 @@ from app.extensions import db, migrate, login_manager, csrf
 from app.models import (
     Usuario, Cliente, Menu, Perfil, PerfilMenu, UsuarioPerfil, UsuarioCliente
 )
+from app.common.decorators import cliente_required
+from sqlalchemy import func
+from app.models import Veiculo, Viagem, StatusVeiculo
 
 
 @login_manager.user_loader
@@ -63,6 +66,33 @@ def create_app():
         menus = Menu.query.filter_by(cliente_id=cliente_id, ativo=True).order_by(Menu.ordem, Menu.nome).all()
         menus = [m for m in menus if current_user.tem_permissao_menu(m.codigo)]
         return render_template('dashboard.html', menus=menus)
+
+    @app.route('/dashbird')
+    @login_required
+    @cliente_required
+    def dashbird():
+        cliente_id = session.get('cliente_id')
+        # cartões resumidos
+        total_veiculos = Veiculo.query.filter_by(cliente_id=cliente_id, ativo=True).count()
+        # veículos por status
+        veiculos_status = db.session.query(StatusVeiculo.nome, func.count(Veiculo.id))
+        veiculos_status = veiculos_status.join(Veiculo, StatusVeiculo.id == Veiculo.status_veiculo_id)
+        veiculos_status = veiculos_status.filter(Veiculo.cliente_id == cliente_id)
+        veiculos_status = veiculos_status.group_by(StatusVeiculo.nome).all()
+
+        # viagens por status
+        viagens_status = db.session.query(Viagem.status, func.count(Viagem.id)).filter(Viagem.cliente_id == cliente_id)
+        viagens_status = viagens_status.group_by(Viagem.status).all()
+
+        # listagem de veículos (simplificada)
+        veiculos = Veiculo.query.filter_by(cliente_id=cliente_id).order_by(Veiculo.placa).limit(50).all()
+
+        # últimas viagens
+        ultimas_viagens = Viagem.query.filter_by(cliente_id=cliente_id).order_by(Viagem.criado_em.desc()).limit(10).all()
+
+        return render_template('dashbird.html', total_veiculos=total_veiculos,
+                               veiculos_status=veiculos_status, viagens_status=viagens_status,
+                               veiculos=veiculos, ultimas_viagens=ultimas_viagens)
 
     @app.context_processor
     def inject_context():
