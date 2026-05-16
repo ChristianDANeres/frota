@@ -31,7 +31,7 @@
                 {% for p in pacientes %}
                 <tr>
                     <td>{{ p.nome }}</td>
-                    <td>{{ p.cpf or '-' }}</td>
+                    <td>{{ (p.cpf|format_cpf) or '-' }}</td>
                     <td>{{ p.nome_mae or '-' }}</td>
                     <td>{{ p.data_nascimento.strftime('%d/%m/%Y') if p.data_nascimento else '-' }}</td>
                     <td class="text-end">
@@ -62,7 +62,7 @@
             <div class="row">
                 <div class="col-md-3 mb-3">
                     <label for="cpf" class="form-label">CPF</label>
-                    <input type="text" name="cpf" id="cpf" class="form-control" placeholder="000.000.000-00">
+                    <input type="text" name="cpf" id="cpf" class="form-control" placeholder="000.000.000-00" inputmode="numeric" pattern="\d*" maxlength="14">
                 </div>
                 <div class="col-md-5 mb-3">
                     <label for="nome" class="form-label">Nome</label>
@@ -94,6 +94,16 @@ document.getElementById('data_nascimento').addEventListener('input', function (e
     if (v.length >= 5) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
     else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
     e.target.value = v;
+});
+// máscara CPF: 000.000.000-00
+document.getElementById('cpf').addEventListener('input', function (e) {
+    let v = e.target.value.replace(/\D/g, '').slice(0,11);
+    let out = '';
+    if (v.length > 0) out = v.slice(0,3);
+    if (v.length >= 4) out += '.' + v.slice(3,6);
+    if (v.length >= 7) out += '.' + v.slice(6,9);
+    if (v.length >= 10) out += '-' + v.slice(9,11);
+    e.target.value = out;
 });
 </script>
 {% endblock %}

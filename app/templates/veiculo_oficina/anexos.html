@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Anexos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Anexos</h4>
+    <a href="{{ url_for('veiculo_oficina.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    {{ form.tipo_arquivo_id.label(class='form-label') }}
+                    {{ form.tipo_arquivo_id(class='form-select') }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.arquivo.label(class='form-label') }}
+                    {{ form.arquivo(class='form-control') }}
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Enviar</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <ul class="list-group">
+            {% for a in obj.anexos %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ a.nome_arquivo }}</strong>
+                    <div class="small text-muted">{{ a.tipo_arquivo.nome if a.tipo_arquivo }}</div>
+                    {% set lower = a.nome_arquivo.lower() %}
+                    {% if lower.endswith('.jpg') or lower.endswith('.jpeg') or lower.endswith('.png') %}
+                    <div class="mt-2">
+                        <a href="{{ a.url }}" target="_blank">
+                            <img src="{{ a.url }}" alt="{{ a.nome_arquivo }}" class="img-thumbnail" style="max-width:200px; height:auto;" />
+                        </a>
+                    </div>
+                    {% elif lower.endswith('.pdf') %}
+                    <div class="mt-2">
+                        <a href="{{ a.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">Abrir PDF</a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{{ url_for('veiculo_oficina.download_anexo', id=obj.id, anexo_id=a.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">Download</a>
+                    {% if not (lower.endswith('.jpg') or lower.endswith('.jpeg') or lower.endswith('.png')) %}
+                    <a href="{{ a.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">Abrir</a>
+                    {% endif %}
+                    <form action="{{ url_for('veiculo_oficina.excluir_anexo', id=obj.id, anexo_id=a.id) }}" method="post" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Remover</button>
+                    </form>
+                </div>
+            </li>
+            {% else %}
+            <li class="list-group-item">Nenhum anexo.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -21,7 +21,7 @@
     <div class="card-body">
         <dl class="row">
             <dt class="col-sm-3">CPF</dt>
-            <dd class="col-sm-9">{{ obj.cpf }}</dd>
+            <dd class="col-sm-9">{{ (obj.cpf|format_cpf) or '-' }}</dd>
 
             <dt class="col-sm-3">Nome</dt>
             <dd class="col-sm-9">{{ obj.nome }}</dd>

@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_required
 from app.extensions import db
@@ -130,6 +131,8 @@ def pacientes(id):
     obj = Viagem.query.filter_by(id=id, cliente_id=session['cliente_id']).first_or_404()
     if request.method == 'POST':
         cpf = request.form.get('cpf', '').strip()
+        # sanitizar CPF: manter somente dígitos
+        cpf_digits = re.sub(r"\D", "", cpf)
         nome = request.form.get('nome', '').strip()
         nome_mae = request.form.get('nome_mae', '').strip()
         data_nasc_str = request.form.get('data_nascimento', '').strip()
@@ -138,6 +141,15 @@ def pacientes(id):
             erros.append('Nome é obrigatório.')
         if not data_nasc_str:
             erros.append('Data de nascimento é obrigatória.')
+        # validações de tamanho para evitar erros de truncamento no banco
+        if not cpf_digits:
+            erros.append('CPF deve conter apenas números.')
+        elif len(cpf_digits) != 11:
+            erros.append('CPF deve conter exatamente 11 dígitos.')
+        if nome and len(nome) > 160:
+            erros.append('Nome não pode ter mais que 160 caracteres.')
+        if nome_mae and len(nome_mae) > 160:
+            erros.append('Nome da mãe não pode ter mais que 160 caracteres.')
         dn = None
         if data_nasc_str:
             try:
@@ -151,7 +163,7 @@ def pacientes(id):
             paciente = ViagemPaciente(
                 cliente_id=session['cliente_id'],
                 viagem_id=obj.id,
-                cpf=cpf,
+                cpf=cpf_digits,
                 nome=nome,
                 nome_mae=nome_mae,
                 data_nascimento=dn,

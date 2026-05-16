@@ -30,14 +30,14 @@
                     <td>{{ obj.veiculo.placa if obj.veiculo else '-' }}</td>
                     <td>{{ obj.motorista.nome if obj.motorista else '-' }}</td>
                     <td>
-                        {% if obj.status == 'EM_ABERTO' %}
+                        {% if obj.status.value == 'EM_ABERTO' %}
                         <span class="badge-em-aberto">Em Aberto</span>
-                        {% elif obj.status == 'INICIADA' %}
+                        {% elif obj.status.value == 'INICIADA' %}
                         <span class="badge-iniciada">Iniciada</span>
-                        {% elif obj.status == 'FINALIZADA' %}
+                        {% elif obj.status.value == 'FINALIZADA' %}
                         <span class="badge-finalizada">Finalizada</span>
                         {% else %}
-                        {{ obj.status }}
+                        {{ obj.status.value }}
                         {% endif %}
                     </td>
                     <td>{{ obj.data_inicial.strftime('%d/%m/%Y %H:%M') if obj.data_inicial else '-' }}</td>

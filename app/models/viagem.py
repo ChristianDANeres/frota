@@ -38,7 +38,7 @@ class ViagemPaciente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False, index=True)
     viagem_id = db.Column(db.Integer, db.ForeignKey('viagem.id'), nullable=False)
-    cpf = db.Column(db.String(14), nullable=False)
+    cpf = db.Column(db.String(11), nullable=False)
     nome = db.Column(db.String(160), nullable=False)
     nome_mae = db.Column(db.String(160), nullable=False)
     data_nascimento = db.Column(db.Date, nullable=False)

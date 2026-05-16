@@ -40,14 +40,14 @@
 
             <dt class="col-sm-3">Status</dt>
             <dd class="col-sm-9">
-                {% if obj.status == 'EM_ABERTO' %}
+                {% if obj.status.value == 'EM_ABERTO' %}
                 <span class="badge-em-aberto">Em Aberto</span>
-                {% elif obj.status == 'INICIADA' %}
+                {% elif obj.status.value == 'INICIADA' %}
                 <span class="badge-iniciada">Iniciada</span>
-                {% elif obj.status == 'FINALIZADA' %}
+                {% elif obj.status.value == 'FINALIZADA' %}
                 <span class="badge-finalizada">Finalizada</span>
                 {% else %}
-                {{ obj.status }}
+                {{ obj.status.value }}
                 {% endif %}
             </dd>
 

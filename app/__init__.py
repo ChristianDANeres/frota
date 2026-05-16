@@ -36,6 +36,8 @@ def create_app():
     from app.routes.viagem_routes import viagem_bp
     from app.routes.abastecimento_routes import abastecimento_bp
     from app.routes.adm_routes import adm_bp
+    from app.routes.oficina_routes import oficina_bp
+    from app.routes.veiculo_oficina_routes import veiculo_oficina_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(cliente_bp)
@@ -49,6 +51,8 @@ def create_app():
     app.register_blueprint(viagem_bp)
     app.register_blueprint(abastecimento_bp)
     app.register_blueprint(adm_bp)
+    app.register_blueprint(oficina_bp)
+    app.register_blueprint(veiculo_oficina_bp)
 
     @app.route('/')
     @login_required
@@ -74,6 +78,10 @@ def create_app():
     with app.app_context():
         db.create_all()
         seed_basico()
+
+    # filtros de template
+    from app.utils import format_cpf
+    app.add_template_filter(format_cpf, name='format_cpf')
 
     return app
 
@@ -110,6 +118,8 @@ def seed_basico():
         ('tipo_arquivo',   'Tipos de Arquivo','tipo_arquivo.listar',     'bi-file-earmark',  22),
         ('tipo_viagem',    'Tipos de Viagem', 'tipo_viagem.listar',      'bi-signpost-2',    23),
         ('status_veiculo', 'Status Veículo',  'status_veiculo.listar',   'bi-check-circle',  24),
+        ('oficina',         'Oficinas',        'oficina.listar',          'bi-wrench',        25),
+        ('veiculo_oficina', 'Veículos Oficina', 'veiculo_oficina.listar',  'bi-tools',         26),
     ]
     menus_criados = []
     for codigo, nome, endpoint, icone, ordem in menus_base:

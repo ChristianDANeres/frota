@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Visualizar Oficina{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">{{ obj.nome }}</h4>
+    <a href="{{ url_for('oficina.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">CNPJ</dt><dd class="col-sm-9">{{ obj.cnpj }}</dd>
+            <dt class="col-sm-3">Endereço</dt><dd class="col-sm-9">{{ obj.logradouro }}, {{ obj.numero }}</dd>
+            <dt class="col-sm-3">Município / Estado</dt><dd class="col-sm-9">{{ obj.municipio }} / {{ obj.estado }}</dd>
+            <dt class="col-sm-3">E-mail</dt><dd class="col-sm-9">{{ obj.email }}</dd>
+            <dt class="col-sm-3">Telefone</dt><dd class="col-sm-9">{{ obj.telefone }}</dd>
+            <dt class="col-sm-3">Responsável</dt><dd class="col-sm-9">{{ obj.responsavel }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

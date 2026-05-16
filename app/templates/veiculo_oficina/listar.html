@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Veículos na Oficina{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Veículos na Oficina</h4>
+    <a href="{{ url_for('veiculo_oficina.novo') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Novo
+    </a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Veículo</th>
+                    <th>Oficina</th>
+                    <th>Entrada</th>
+                    <th>Saída</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in registros %}
+                <tr>
+                    <td>{{ r.veiculo.placa if r.veiculo else '' }}</td>
+                    <td>{{ r.oficina.nome if r.oficina else '' }}</td>
+                    <td>{{ r.data_entrada.strftime('%Y-%m-%d') if r.data_entrada }}</td>
+                    <td>{{ r.data_saida.strftime('%Y-%m-%d') if r.data_saida }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('veiculo_oficina.visualizar', id=r.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                        <a href="{{ url_for('veiculo_oficina.editar', id=r.id) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <a href="{{ url_for('veiculo_oficina.anexos', id=r.id) }}" class="btn btn-sm btn-outline-info">Anexos</a>
+                        <form action="{{ url_for('veiculo_oficina.excluir', id=r.id) }}" method="post" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Nenhum registro encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, DecimalField, DateTimeLocalField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Optional, NumberRange
+from wtforms.validators import DataRequired, Optional, NumberRange, Length, Regexp
 
 
 STATUS_CHOICES = [('EM_ABERTO', 'Em Aberto'), ('INICIADA', 'Iniciada'), ('FINALIZADA', 'Finalizada')]
@@ -21,8 +21,8 @@ class ViagemForm(FlaskForm):
 
 
 class ViagemPacienteForm(FlaskForm):
-    cpf = StringField('CPF', validators=[DataRequired()])
-    nome = StringField('Nome', validators=[DataRequired()])
-    nome_mae = StringField('Nome da Mãe', validators=[DataRequired()])
+    cpf = StringField('CPF', validators=[DataRequired(), Length(min=11, max=11), Regexp(r'^\d{11}$', message='CPF deve conter exatamente 11 dígitos.')])
+    nome = StringField('Nome', validators=[DataRequired(), Length(max=160)])
+    nome_mae = StringField('Nome da Mãe', validators=[DataRequired(), Length(max=160)])
     data_nascimento = StringField('Data de Nascimento', validators=[DataRequired()])
     submit = SubmitField('Adicionar Paciente')

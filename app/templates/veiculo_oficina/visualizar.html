@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Visualizar Registro Oficina{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Registro Oficina</h4>
+    <a href="{{ url_for('veiculo_oficina.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Veículo</dt><dd class="col-sm-9">{{ obj.veiculo.placa if obj.veiculo }}</dd>
+            <dt class="col-sm-3">Oficina</dt><dd class="col-sm-9">{{ obj.oficina.nome if obj.oficina }}</dd>
+            <dt class="col-sm-3">Entrada</dt><dd class="col-sm-9">{{ obj.data_entrada }}</dd>
+            <dt class="col-sm-3">Saída</dt><dd class="col-sm-9">{{ obj.data_saida }}</dd>
+            <dt class="col-sm-3">KM Entrada/Saída</dt><dd class="col-sm-9">{{ obj.km_entrada }} / {{ obj.km_saida }}</dd>
+            <dt class="col-sm-3">Motivo</dt><dd class="col-sm-9">{{ obj.motivo }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}
