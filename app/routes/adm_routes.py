@@ -202,16 +202,45 @@ def usuarios():
 @admin_required
 def usuario_novo():
     form = UsuarioForm()
+    # popular choices dinâmicas
+    clientes_list = Cliente.query.filter_by(ativo=True).order_by(Cliente.nome).all()
+    form.clientes.choices = [(c.id, c.nome) for c in clientes_list]
+    perfis_list = Perfil.query.filter_by(ativo=True).order_by(Perfil.nome).all()
+    form.perfis.choices = [(p.id, p.nome) for p in perfis_list]
     if form.validate_on_submit():
+        # validação de CPF único
+        if form.cpf.data:
+            existing = Usuario.query.filter_by(cpf=form.cpf.data).first()
+            if existing:
+                form.cpf.errors.append('CPF já cadastrado para outro usuário.')
+                return render_template('usuario/form.html', form=form, titulo='Novo Usuário')
         obj = Usuario(username=form.username.data, nome=form.nome.data,
                       email=form.email.data, telefone=form.telefone.data,
                       is_admin=form.is_admin.data, ativo=form.ativo.data)
+        obj.cpf = form.cpf.data.strip() if form.cpf.data else None
         if form.senha.data:
             obj.set_senha(form.senha.data)
         else:
             flash('Senha obrigatória para novo usuário.', 'danger')
             return render_template('usuario/form.html', form=form, titulo='Novo Usuário')
         db.session.add(obj)
+        db.session.commit()
+        # Associação de clientes (municípios vinculados)
+        selected_clients = request.form.getlist('clientes')
+        for cid in selected_clients:
+            try:
+                cid_int = int(cid)
+            except Exception:
+                continue
+            db.session.add(UsuarioCliente(usuario_id=obj.id, cliente_id=cid_int))
+        # Associação de perfis
+        selected_perfis = request.form.getlist('perfis')
+        for pid in selected_perfis:
+            try:
+                pid_int = int(pid)
+            except Exception:
+                continue
+            db.session.add(UsuarioPerfil(usuario_id=obj.id, perfil_id=pid_int))
         db.session.commit()
         flash('Usuário criado.', 'success')
         return redirect(url_for('adm.usuarios'))
@@ -224,15 +253,47 @@ def usuario_novo():
 def usuario_editar(id):
     obj = Usuario.query.get_or_404(id)
     form = UsuarioForm()
+    # popular choices dinâmicas
+    clientes_list = Cliente.query.filter_by(ativo=True).order_by(Cliente.nome).all()
+    form.clientes.choices = [(c.id, c.nome) for c in clientes_list]
+    perfis_list = Perfil.query.filter_by(ativo=True).order_by(Perfil.nome).all()
+    form.perfis.choices = [(p.id, p.nome) for p in perfis_list]
     if form.validate_on_submit():
         obj.username = form.username.data
         obj.nome = form.nome.data
         obj.email = form.email.data
         obj.telefone = form.telefone.data
+        obj.cpf = form.cpf.data.strip() if form.cpf.data else None
         obj.is_admin = form.is_admin.data
         obj.ativo = form.ativo.data
         if form.senha.data:
             obj.set_senha(form.senha.data)
+        db.session.commit()
+        # validar CPF único no editar
+        if obj.cpf:
+            existing = Usuario.query.filter(Usuario.cpf == obj.cpf, Usuario.id != obj.id).first()
+            if existing:
+                form.cpf.errors.append('CPF já cadastrado para outro usuário.')
+                # repopular escolhas e exibir formulário novamente
+                return render_template('usuario/form.html', form=form, titulo='Editar Usuário', obj=obj)
+        # atualizar associações de clientes
+        UsuarioCliente.query.filter_by(usuario_id=obj.id).delete()
+        selected_clients = request.form.getlist('clientes')
+        for cid in selected_clients:
+            try:
+                cid_int = int(cid)
+            except Exception:
+                continue
+            db.session.add(UsuarioCliente(usuario_id=obj.id, cliente_id=cid_int))
+        # atualizar associações de perfis
+        UsuarioPerfil.query.filter_by(usuario_id=obj.id).delete()
+        selected_perfis = request.form.getlist('perfis')
+        for pid in selected_perfis:
+            try:
+                pid_int = int(pid)
+            except Exception:
+                continue
+            db.session.add(UsuarioPerfil(usuario_id=obj.id, perfil_id=pid_int))
         db.session.commit()
         flash('Usuário atualizado.', 'success')
         return redirect(url_for('adm.usuarios'))
@@ -242,6 +303,9 @@ def usuario_editar(id):
     form.telefone.data = obj.telefone
     form.is_admin.data = obj.is_admin
     form.ativo.data = obj.ativo
+    # preencher seleções existentes
+    form.clientes.data = [uc.cliente_id for uc in obj.clientes]
+    form.perfis.data = [up.perfil_id for up in obj.perfis]
     return render_template('usuario/form.html', form=form, titulo='Editar Usuário', obj=obj)
 
 
@@ -282,15 +346,23 @@ def perfis():
 @admin_required
 def perfil_novo():
     form = PerfilForm()
+    cliente_id = session.get('cliente_id')
+    menus_pai = Menu.query.filter_by(cliente_id=cliente_id, menu_pai_id=None, ativo=True).order_by(Menu.ordem, Menu.nome).all()
     if form.validate_on_submit():
-        cliente_id = session.get('cliente_id')
         obj = Perfil(cliente_id=cliente_id, nome=form.nome.data,
                      descricao=form.descricao.data, ativo=form.ativo.data)
         db.session.add(obj)
         db.session.commit()
+        for mid in request.form.getlist('menus'):
+            try:
+                db.session.add(PerfilMenu(perfil_id=obj.id, menu_id=int(mid)))
+            except Exception:
+                pass
+        db.session.commit()
         flash('Perfil criado.', 'success')
         return redirect(url_for('adm.perfis'))
-    return render_template('perfil/form.html', form=form, titulo='Novo Perfil')
+    return render_template('perfil/form.html', form=form, titulo='Novo Perfil',
+                           menus_pai=menus_pai, menus_selecionados=set())
 
 
 @adm_bp.route('/perfis/<int:id>/editar', methods=['GET', 'POST'])
@@ -299,17 +371,28 @@ def perfil_novo():
 def perfil_editar(id):
     obj = Perfil.query.get_or_404(id)
     form = PerfilForm()
+    cliente_id = session.get('cliente_id') or obj.cliente_id
+    menus_pai = Menu.query.filter_by(cliente_id=cliente_id, menu_pai_id=None, ativo=True).order_by(Menu.ordem, Menu.nome).all()
     if form.validate_on_submit():
         obj.nome = form.nome.data
         obj.descricao = form.descricao.data
         obj.ativo = form.ativo.data
+        db.session.commit()
+        PerfilMenu.query.filter_by(perfil_id=obj.id).delete()
+        for mid in request.form.getlist('menus'):
+            try:
+                db.session.add(PerfilMenu(perfil_id=obj.id, menu_id=int(mid)))
+            except Exception:
+                pass
         db.session.commit()
         flash('Perfil atualizado.', 'success')
         return redirect(url_for('adm.perfis'))
     form.nome.data = obj.nome
     form.descricao.data = obj.descricao
     form.ativo.data = obj.ativo
-    return render_template('perfil/form.html', form=form, titulo='Editar Perfil', obj=obj)
+    menus_selecionados = {pm.menu_id for pm in obj.menus}
+    return render_template('perfil/form.html', form=form, titulo='Editar Perfil', obj=obj,
+                           menus_pai=menus_pai, menus_selecionados=menus_selecionados)
 
 
 @adm_bp.route('/perfis/<int:id>/visualizar')

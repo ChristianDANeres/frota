@@ -10,34 +10,174 @@
     </a>
 </div>
 <div class="card shadow-sm">
+    <div class="card-header">
+        <i class="bi bi-person-badge"></i> {{ 'Editar' if obj else 'Novo' }} Perfil
+    </div>
     <div class="card-body">
-        <form method="POST">
+        <form method="POST" id="form-perfil">
             {{ form.hidden_tag() }}
-            <div class="mb-3">
-                {{ form.nome.label(class='form-label') }}
-                {{ form.nome(class='form-control' + (' is-invalid' if form.nome.errors else '')) }}
-                {% for erro in form.nome.errors %}
-                <div class="invalid-feedback">{{ erro }}</div>
-                {% endfor %}
+
+            <!-- Dados básicos -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form.nome.label(class='form-label') }}
+                    {{ form.nome(class='form-control' + (' is-invalid' if form.nome.errors else '')) }}
+                    {% for erro in form.nome.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    {{ form.descricao.label(class='form-label') }}
+                    {{ form.descricao(class='form-control' + (' is-invalid' if form.descricao.errors else '')) }}
+                    {% for erro in form.descricao.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="mb-3">
-                {{ form.descricao.label(class='form-label') }}
-                {{ form.descricao(class='form-control' + (' is-invalid' if form.descricao.errors else '')) }}
-                {% for erro in form.descricao.errors %}
-                <div class="invalid-feedback">{{ erro }}</div>
-                {% endfor %}
-            </div>
-            <div class="mb-3 form-check">
-                {{ form.ativo(class='form-check-input') }}
-                {{ form.ativo.label(class='form-check-label') }}
-            </div>
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-circle"></i> Salvar
+
+            <!-- Menus Permitidos -->
+            {% if menus_pai is defined and menus_pai %}
+            <hr>
+            <h5 class="mb-1"><i class="bi bi-list-check"></i> Menus Permitidos</h5>
+            <p class="text-muted small mb-2">Selecione os menus que este perfil poderá acessar. Para menus com submenus, é necessário marcar o menu pai para que os submenus apareçam.</p>
+            <div class="mb-3 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-select-all">
+                    <i class="bi bi-check-all"></i> Selecionar Todos
                 </button>
-                <a href="{{ url_for('adm.perfis') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-clear-all">
+                    <i class="bi bi-x-lg"></i> Limpar Seleção
+                </button>
+            </div>
+
+            <div class="row g-3" id="menus-grid">
+                {% for menu in menus_pai %}
+                {% set pai_sel = menu.id in menus_selecionados %}
+                {% set subs_sel = menu.submenus | selectattr('id', 'in', menus_selecionados) | list %}
+                <div class="col-md-4">
+                    <div class="menu-card {% if pai_sel %}menu-card-ativo{% endif %}" id="card-{{ menu.id }}">
+                        <!-- Checkbox pai -->
+                        <div class="menu-card-header">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input menu-pai-cb" type="checkbox"
+                                       name="menus" id="menu_{{ menu.id }}" value="{{ menu.id }}"
+                                       {% if pai_sel %}checked{% endif %}
+                                       data-card="{{ menu.id }}">
+                                <label class="form-check-label fw-semibold" for="menu_{{ menu.id }}">
+                                    <i class="bi {{ menu.icone or 'bi-circle' }} me-1"></i>{{ menu.nome }}
+                                </label>
+                                {% if menu.submenus %}
+                                <span class="badge bg-primary ms-1 sub-count" id="badge-{{ menu.id }}">
+                                    {{ subs_sel | length }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Submenus -->
+                        {% if menu.submenus %}
+                        <div class="menu-card-subs">
+                            {% for sub in menu.submenus | sort(attribute='ordem') %}
+                            <div class="form-check mb-1">
+                                <input class="form-check-input menu-sub-cb" type="checkbox"
+                                       name="menus" id="menu_{{ sub.id }}" value="{{ sub.id }}"
+                                       {% if sub.id in menus_selecionados %}checked{% endif %}
+                                       data-pai="{{ menu.id }}">
+                                <label class="form-check-label small" for="menu_{{ sub.id }}">
+                                    <i class="bi {{ sub.icone or 'bi-dash' }} me-1"></i>{{ sub.nome }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <hr>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Salvar Alterações
+                </button>
+                <a href="{{ url_for('adm.perfis') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+.menu-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #fff;
+    height: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.menu-card-ativo {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,.18);
+}
+.menu-card-header { margin-bottom: 6px; }
+.menu-card-subs {
+    padding-left: 10px;
+    border-left: 2px solid #e2e8f0;
+    margin-top: 6px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Ao marcar/desmarcar pai — atualiza borda do card
+    document.querySelectorAll('.menu-pai-cb').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            var card = document.getElementById('card-' + this.dataset.card);
+            if (card) card.classList.toggle('menu-card-ativo', this.checked);
+        });
+    });
+
+    // Ao marcar/desmarcar sub — atualiza badge do pai
+    document.querySelectorAll('.menu-sub-cb').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            atualizarBadge(this.dataset.pai);
+        });
+    });
+
+    function atualizarBadge(paiId) {
+        var badge = document.getElementById('badge-' + paiId);
+        if (!badge) return;
+        var total = document.querySelectorAll('.menu-sub-cb[data-pai="' + paiId + '"]:checked').length;
+        badge.textContent = total;
+    }
+
+    // Selecionar todos
+    document.getElementById('btn-select-all')?.addEventListener('click', function () {
+        document.querySelectorAll('#menus-grid input[type="checkbox"]').forEach(function (cb) {
+            cb.checked = true;
+            var card = cb.dataset.card ? document.getElementById('card-' + cb.dataset.card) : null;
+            if (card) card.classList.add('menu-card-ativo');
+        });
+        document.querySelectorAll('.sub-count').forEach(function (badge) {
+            var paiId = badge.id.replace('badge-', '');
+            var total = document.querySelectorAll('.menu-sub-cb[data-pai="' + paiId + '"]').length;
+            badge.textContent = total;
+        });
+    });
+
+    // Limpar seleção
+    document.getElementById('btn-clear-all')?.addEventListener('click', function () {
+        document.querySelectorAll('#menus-grid input[type="checkbox"]').forEach(function (cb) {
+            cb.checked = false;
+            var card = cb.dataset.card ? document.getElementById('card-' + cb.dataset.card) : null;
+            if (card) card.classList.remove('menu-card-ativo');
+        });
+        document.querySelectorAll('.sub-count').forEach(function (badge) {
+            badge.textContent = '0';
+        });
+    });
+});
+</script>
 {% endblock %}

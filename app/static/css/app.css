@@ -39,6 +39,16 @@ body { background: var(--body-bg); font-family: 'Inter', 'Segoe UI', sans-serif;
   font-size: .68rem; font-weight: 600; letter-spacing: .08em;
   color: #4a5568; text-transform: uppercase;
 }
+/* botão que alterna seções do sidebar */
+.btn-toggle-section {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; background: transparent; border: none;
+  color: #9aa3b2; padding: 6px 16px; font-weight: 600; font-size: .78rem;
+}
+.btn-toggle-section:focus { outline: none; box-shadow: none; }
+.btn-toggle-section[aria-expanded="true"] { color: #fff; }
+.btn-toggle-section .toggle-icon { margin-left: 12px; transition: transform .18s ease; }
+.btn-toggle-section[aria-expanded="true"] .toggle-icon { transform: rotate(180deg); }
 #sidebar .nav-link {
   display: flex; align-items: center; gap: 10px;
   color: var(--sidebar-text);

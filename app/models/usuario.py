@@ -12,6 +12,7 @@ class Usuario(UserMixin, TimestampMixin, db.Model):
     nome = db.Column(db.String(160), nullable=False)
     email = db.Column(db.String(160))
     telefone = db.Column(db.String(30))
+    cpf = db.Column(db.String(20), unique=True)
     senha_hash = db.Column(db.String(255), nullable=False)
     ativo = db.Column(db.Boolean, default=True, nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)

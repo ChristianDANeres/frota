@@ -17,10 +17,14 @@
     <i class="bi bi-truck-front-fill"></i> FROTA
   </a>
 
-  <div class="sidebar-section">Principal</div>
-  <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
-    <i class="bi bi-speedometer2"></i> Dashboard
-  </a>
+    <div class="sidebar-section">
+    <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-principal" aria-expanded="true" aria-controls="section-principal">Principal <i class="bi bi-chevron-down toggle-icon"></i></button>
+  </div>
+  <div class="collapse show" id="section-principal">
+    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+  </div>
 
   {% if current_user.is_authenticated %}
     {% set menus_sidebar = menus_nav | default([]) %}
@@ -30,7 +34,10 @@
     {% set grupo_adm = ['adm'] %}
 
     {% if menus_sidebar | selectattr('codigo', 'in', grupo_frota) | list %}
-    <div class="sidebar-section">Frota</div>
+    <div class="sidebar-section">
+      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-frota" aria-expanded="false" aria-controls="section-frota">Frota <i class="bi bi-chevron-down toggle-icon"></i></button>
+    </div>
+    <div class="collapse" id="section-frota">
     {% endif %}
     {% for m in menus_sidebar %}
       {% if m.codigo in grupo_frota %}
@@ -40,9 +47,15 @@
       </a>
       {% endif %}
     {% endfor %}
+    {% if menus_sidebar | selectattr('codigo', 'in', grupo_frota) | list %}
+    </div>
+    {% endif %}
 
     {% if menus_sidebar | selectattr('codigo', 'in', grupo_tabelas) | list %}
-    <div class="sidebar-section">Tabelas</div>
+    <div class="sidebar-section">
+      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-tabelas" aria-expanded="false" aria-controls="section-tabelas">Tabelas <i class="bi bi-chevron-down toggle-icon"></i></button>
+    </div>
+    <div class="collapse" id="section-tabelas">
     {% endif %}
     {% for m in menus_sidebar %}
       {% if m.codigo in grupo_tabelas %}
@@ -52,9 +65,15 @@
       </a>
       {% endif %}
     {% endfor %}
+    {% if menus_sidebar | selectattr('codigo', 'in', grupo_tabelas) | list %}
+    </div>
+    {% endif %}
 
     {% if current_user.is_admin %}
-    <div class="sidebar-section">Administração</div>
+    <div class="sidebar-section">
+      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-adm" aria-expanded="false" aria-controls="section-adm">Administração <i class="bi bi-chevron-down toggle-icon"></i></button>
+    </div>
+    <div class="collapse" id="section-adm">
     <a href="{{ url_for('adm.clientes') }}" class="nav-link {% if request.blueprint == 'adm' and 'clientes' in request.endpoint %}active{% endif %}">
       <i class="bi bi-building"></i> Clientes
     </a>
@@ -70,6 +89,7 @@
     <a href="{{ url_for('oficina.listar') }}" class="nav-link {% if request.blueprint == 'oficina' %}active{% endif %}">
       <i class="bi bi-wrench"></i> Oficinas
     </a>
+    </div>
     {% endif %}
   {% endif %}
 </nav>
@@ -105,6 +125,24 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Expande automaticamente a seção que contém o link ativo
+  document.addEventListener('DOMContentLoaded', function () {
+    var active = document.querySelector('#sidebar .nav-link.active');
+    if (active) {
+      var parent = active.closest('.collapse');
+      if (parent) {
+        var bs = bootstrap.Collapse.getOrCreateInstance(parent);
+        bs.show();
+        // ajustar atributo aria-expanded do botão que controla essa seção
+        try {
+          var btn = document.querySelector('[data-bs-target="#' + parent.id + '"]');
+          if (btn) btn.setAttribute('aria-expanded', 'true');
+        } catch (e) {}
+      }
+    }
+  });
+</script>
 </body>
 </html>
 
