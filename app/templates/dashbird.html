@@ -1,91 +1,318 @@
 {% extends 'base.html' %}
-{% block page_title %}Dashbird (Análises){% endblock %}
-{% block title %}Dashbird – FROTA{% endblock %}
+{% block page_title %}Análises{% endblock %}
+{% block title %}Análises – FROTA{% endblock %}
+
+{% macro fmt_num(v, decimais=1) %}{{ "%.{0}f".format(decimais)|format(v) }}{% endmacro %}
+
 {% block content %}
-<div class="page-header">
-  <h4><i class="bi bi-bar-chart-line me-2"></i>Dashbird — Análises de Veículos e Viagens</h4>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>Análises da Frota</h4>
+  <span class="text-muted small">{{ hoje.strftime('%d/%m/%Y') }}</span>
 </div>
 
-<div class="row g-3 mb-3">
-  <div class="col-md-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="text-muted small">Total Veículos</div>
-        <div class="fs-4 fw-600">{{ total_veiculos }}</div>
+{# ── KPIs ────────────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#e0e7ff;">
+          <i class="bi bi-truck-front fs-4" style="color:#6366f1"></i>
+        </div>
+        <div>
+          <div class="fs-3 fw-bold lh-1">{{ total_veiculos }}</div>
+          <div class="text-muted small">Veículos ativos</div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card">
+  <div class="col-6 col-md-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#fef9c3;">
+          <i class="bi bi-wrench fs-4" style="color:#ca8a04"></i>
+        </div>
+        <div>
+          <div class="fs-3 fw-bold lh-1">{{ total_em_oficina }}</div>
+          <div class="text-muted small">Em oficina agora</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#dcfce7;">
+          <i class="bi bi-map fs-4" style="color:#16a34a"></i>
+        </div>
+        <div>
+          <div class="fs-3 fw-bold lh-1">{{ viagens_em_andamento|length }}</div>
+          <div class="text-muted small">Viagens em andamento</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:#fce7f3;">
+          <i class="bi bi-speedometer fs-4" style="color:#db2777"></i>
+        </div>
+        <div>
+          <div class="fs-3 fw-bold lh-1">{{ km_mes|int }}</div>
+          <div class="text-muted small">Km rodados no mês</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Veículos em Oficina + Viagens em Andamento ──────────────────── #}
+<div class="row g-3 mb-4">
+
+  {# Veículos em Oficina #}
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-wrench me-1 text-warning"></i> Veículos em Oficina</span>
+        <span class="badge bg-warning text-dark">{{ total_em_oficina }}</span>
+      </div>
+      <div class="card-body p-0">
+        {% if veiculos_em_oficina %}
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr><th>Placa</th><th>Oficina</th><th>Entrada</th><th>Motivo</th></tr>
+          </thead>
+          <tbody>
+            {% for vo in veiculos_em_oficina %}
+            <tr>
+              <td class="fw-semibold">{{ vo.veiculo.placa if vo.veiculo else '—' }}</td>
+              <td>{{ vo.oficina.nome if vo.oficina else '—' }}</td>
+              <td class="text-nowrap">{{ vo.data_entrada.strftime('%d/%m/%Y') if vo.data_entrada else '—' }}</td>
+              <td class="text-truncate" style="max-width:140px" title="{{ vo.motivo or '' }}">{{ vo.motivo or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="p-3 text-muted text-center small">Nenhum veículo em oficina no momento.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# Viagens em Andamento #}
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-map me-1 text-success"></i> Viagens em Andamento</span>
+        <span class="badge bg-success">{{ viagens_em_andamento|length }}</span>
+      </div>
+      <div class="card-body p-0">
+        {% if viagens_em_andamento %}
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr><th>Placa</th><th>Motorista</th><th>Destino</th><th>Início</th></tr>
+          </thead>
+          <tbody>
+            {% for v in viagens_em_andamento %}
+            <tr>
+              <td class="fw-semibold">{{ v.veiculo.placa if v.veiculo else '—' }}</td>
+              <td>{{ v.motorista.nome.split()[0] if v.motorista else '—' }}</td>
+              <td class="text-truncate" style="max-width:130px" title="{{ v.destino }}">{{ v.destino }}</td>
+              <td class="text-nowrap">{{ v.data_inicial.strftime('%d/%m %H:%M') if v.data_inicial else '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="p-3 text-muted text-center small">Nenhuma viagem em andamento.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Estatísticas Semana / Mês ────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+
+  {# Semana #}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">
+        <i class="bi bi-calendar-week me-1"></i>
+        Semana atual
+        <span class="text-muted small ms-1">(desde {{ inicio_sem.strftime('%d/%m') }})</span>
+      </div>
       <div class="card-body">
-        <div class="text-muted small">Veículos por Status</div>
+        <div class="row g-2 text-center">
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-primary">{{ viagens_semana }}</div>
+              <div class="text-muted small">Viagens</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-primary">{{ km_semana|int }}</div>
+              <div class="text-muted small">Km rodados</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-warning">{{ abast_sem_litros|round(1) }}</div>
+              <div class="text-muted small">Litros abastec.</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-warning">R$ {{ "%.2f"|format(abast_sem_valor) }}</div>
+              <div class="text-muted small">Gasto em combust.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Mês #}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">
+        <i class="bi bi-calendar-month me-1"></i>
+        Mês atual
+        <span class="text-muted small ms-1">(desde {{ inicio_mes.strftime('%d/%m') }})</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-2 text-center">
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-primary">{{ viagens_mes }}</div>
+              <div class="text-muted small">Viagens</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-primary">{{ km_mes|int }}</div>
+              <div class="text-muted small">Km rodados</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-warning">{{ abast_mes_litros|round(1) }}</div>
+              <div class="text-muted small">Litros abastec.</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <div class="fs-4 fw-bold text-warning">R$ {{ "%.2f"|format(abast_mes_valor) }}</div>
+              <div class="text-muted small">Gasto em combust.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Situação da Frota + Viagens por Tipo ────────────────────────── #}
+<div class="row g-3 mb-4">
+
+  {# Situação por Status #}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header"><i class="bi bi-circle-half me-1"></i> Situação da Frota por Status</div>
+      <div class="card-body">
+        {% if veiculos_status %}
+        {% set total = veiculos_status | sum(attribute=1) %}
         {% for nome, qtd in veiculos_status %}
-        <div class="d-flex justify-content-between"><div>{{ nome }}</div><div><span class="badge bg-secondary">{{ qtd }}</span></div></div>
+        <div class="mb-2">
+          <div class="d-flex justify-content-between small mb-1">
+            <span>{{ nome }}</span>
+            <span class="fw-semibold">{{ qtd }} veículo{{ 's' if qtd != 1 }}</span>
+          </div>
+          <div class="progress" style="height:8px">
+            <div class="progress-bar" style="width:{{ ((qtd / total) * 100)|round|int }}%;background:#6366f1"></div>
+          </div>
+        </div>
         {% endfor %}
+        {% else %}
+        <div class="text-muted small text-center">Nenhum dado de status disponível.</div>
+        {% endif %}
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card">
+
+  {# Viagens por Tipo no Mês #}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">
+        <i class="bi bi-signpost-2 me-1"></i> Viagens por Tipo
+        <span class="text-muted small ms-1">(mês atual)</span>
+      </div>
       <div class="card-body">
-        <div class="text-muted small">Viagens por Status</div>
-        {% for status, qtd in viagens_status %}
-        <div class="d-flex justify-content-between"><div>{{ status.name if status is not string else status }}</div><div><span class="badge bg-secondary">{{ qtd }}</span></div></div>
+        {% if viagens_por_tipo_mes %}
+        {% set total_t = viagens_por_tipo_mes | sum(attribute=1) %}
+        {% for nome, qtd in viagens_por_tipo_mes %}
+        <div class="mb-2">
+          <div class="d-flex justify-content-between small mb-1">
+            <span>{{ nome }}</span>
+            <span class="fw-semibold">{{ qtd }} viagen{{ 's' if qtd != 1 }}</span>
+          </div>
+          <div class="progress" style="height:8px">
+            <div class="progress-bar bg-success" style="width:{{ ((qtd / total_t) * 100)|round|int }}%"></div>
+          </div>
+        </div>
         {% endfor %}
+        {% else %}
+        <div class="text-muted small text-center">Nenhuma viagem com tipo definido este mês.</div>
+        {% endif %}
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="text-muted small">Últimas Viagens</div>
-        <div class="fs-6">{{ ultimas_viagens|length }}</div>
-      </div>
-    </div>
-  </div>
+
 </div>
 
-<div class="row g-3">
-  <div class="col-lg-6">
-    <div class="card">
-      <div class="card-header">Veículos (até 50)</div>
-      <div class="card-body p-0">
-        <table class="table mb-0">
-          <thead><tr><th>Placa</th><th>Modelo</th><th>Status</th><th>Ativo</th></tr></thead>
-          <tbody>
-            {% for v in veiculos %}
-            <tr>
-              <td>{{ v.placa }}</td>
-              <td>{{ v.modelo or '-' }}</td>
-              <td>{{ v.status_veiculo.nome if v.status_veiculo else '—' }}</td>
-              <td>{{ 'Sim' if v.ativo else 'Não' }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-6">
-    <div class="card">
-      <div class="card-header">Últimas Viagens</div>
-      <div class="card-body p-0">
-        <table class="table mb-0">
-          <thead><tr><th>Veículo</th><th>Motorista</th><th>Destino</th><th>Status</th></tr></thead>
-          <tbody>
-            {% for t in ultimas_viagens %}
-            <tr>
-              <td>{{ t.veiculo.placa if t.veiculo else '—' }}</td>
-              <td>{{ t.motorista.nome if t.motorista else '—' }}</td>
-              <td>{{ t.destino }}</td>
-              <td>{{ t.status.name }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
+{# ── Últimas Viagens ─────────────────────────────────────────────── #}
+<div class="card shadow-sm mb-4">
+  <div class="card-header"><i class="bi bi-clock-history me-1"></i> Últimas 10 Viagens</div>
+  <div class="card-body p-0">
+    {% if ultimas_viagens %}
+    <table class="table table-sm table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Placa</th>
+          <th>Motorista</th>
+          <th>Destino</th>
+          <th>Tipo</th>
+          <th>Km rodados</th>
+          <th>Status</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in ultimas_viagens %}
+        {% set km_r = ((v.km_final - v.km_inicial)|float) if (v.km_final and v.km_inicial) else None %}
+        <tr>
+          <td class="fw-semibold">{{ v.veiculo.placa if v.veiculo else '—' }}</td>
+          <td>{{ v.motorista.nome if v.motorista else '—' }}</td>
+          <td class="text-truncate" style="max-width:150px" title="{{ v.destino }}">{{ v.destino }}</td>
+          <td>{{ v.tipo_viagem.nome if v.tipo_viagem else '—' }}</td>
+          <td>{{ '%.1f km'|format(km_r) if km_r is not none else '—' }}</td>
+          <td>
+            {% if v.status.name == 'INICIADA' %}<span class="badge bg-primary">Em andamento</span>
+            {% elif v.status.name == 'FINALIZADA' %}<span class="badge bg-success">Finalizada</span>
+            {% else %}<span class="badge bg-secondary">Em aberto</span>{% endif %}
+          </td>
+          <td class="text-nowrap text-muted small">{{ v.criado_em.strftime('%d/%m/%Y') if v.criado_em else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="p-3 text-muted text-center">Nenhuma viagem registrada.</div>
+    {% endif %}
   </div>
 </div>
 

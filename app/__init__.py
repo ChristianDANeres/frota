@@ -1,4 +1,5 @@
 import os
+from datetime import date, timedelta
 from flask import Flask, render_template, session, redirect, url_for
 from flask_login import login_required, current_user
 from config import Config
@@ -8,7 +9,7 @@ from app.models import (
 )
 from app.common.decorators import cliente_required
 from sqlalchemy import func
-from app.models import Veiculo, Viagem, StatusVeiculo
+from app.models import Veiculo, Viagem, StatusVeiculo, VeiculoOficina, Abastecimento, TipoViagem
 
 
 @login_manager.user_loader
@@ -71,28 +72,141 @@ def create_app():
     @login_required
     @cliente_required
     def dashbird():
+        from app.models.viagem import StatusViagem
         cliente_id = session.get('cliente_id')
-        # cartões resumidos
+
+        hoje        = date.today()
+        inicio_sem  = hoje - timedelta(days=hoje.weekday())
+        inicio_mes  = hoje.replace(day=1)
+
+        # ── Frota ─────────────────────────────────────────────
         total_veiculos = Veiculo.query.filter_by(cliente_id=cliente_id, ativo=True).count()
-        # veículos por status
-        veiculos_status = db.session.query(StatusVeiculo.nome, func.count(Veiculo.id))
-        veiculos_status = veiculos_status.join(Veiculo, StatusVeiculo.id == Veiculo.status_veiculo_id)
-        veiculos_status = veiculos_status.filter(Veiculo.cliente_id == cliente_id)
-        veiculos_status = veiculos_status.group_by(StatusVeiculo.nome).all()
 
-        # viagens por status
-        viagens_status = db.session.query(Viagem.status, func.count(Viagem.id)).filter(Viagem.cliente_id == cliente_id)
-        viagens_status = viagens_status.group_by(Viagem.status).all()
+        veiculos_status = (
+            db.session.query(StatusVeiculo.nome, func.count(Veiculo.id))
+            .join(Veiculo, StatusVeiculo.id == Veiculo.status_veiculo_id)
+            .filter(Veiculo.cliente_id == cliente_id, Veiculo.ativo == True)
+            .group_by(StatusVeiculo.nome)
+            .all()
+        )
 
-        # listagem de veículos (simplificada)
-        veiculos = Veiculo.query.filter_by(cliente_id=cliente_id).order_by(Veiculo.placa).limit(50).all()
+        veiculos_em_oficina = (
+            VeiculoOficina.query
+            .filter_by(cliente_id=cliente_id)
+            .filter(VeiculoOficina.data_saida == None)
+            .order_by(VeiculoOficina.data_entrada.desc())
+            .all()
+        )
+        total_em_oficina = len(veiculos_em_oficina)
 
-        # últimas viagens
-        ultimas_viagens = Viagem.query.filter_by(cliente_id=cliente_id).order_by(Viagem.criado_em.desc()).limit(10).all()
+        # ── Viagens ───────────────────────────────────────────
+        viagens_em_andamento = (
+            Viagem.query
+            .filter_by(cliente_id=cliente_id)
+            .filter(Viagem.status == StatusViagem.INICIADA)
+            .order_by(Viagem.data_inicial.desc())
+            .all()
+        )
 
-        return render_template('dashbird.html', total_veiculos=total_veiculos,
-                               veiculos_status=veiculos_status, viagens_status=viagens_status,
-                               veiculos=veiculos, ultimas_viagens=ultimas_viagens)
+        viagens_status = (
+            db.session.query(Viagem.status, func.count(Viagem.id))
+            .filter(Viagem.cliente_id == cliente_id)
+            .group_by(Viagem.status)
+            .all()
+        )
+
+        viagens_semana = (
+            Viagem.query
+            .filter(
+                Viagem.cliente_id == cliente_id,
+                func.date(Viagem.criado_em) >= inicio_sem
+            ).count()
+        )
+        viagens_mes = (
+            Viagem.query
+            .filter(
+                Viagem.cliente_id == cliente_id,
+                func.date(Viagem.criado_em) >= inicio_mes
+            ).count()
+        )
+
+        km_semana = float(
+            db.session.query(func.sum(Viagem.km_final - Viagem.km_inicial))
+            .filter(
+                Viagem.cliente_id == cliente_id,
+                Viagem.status == StatusViagem.FINALIZADA,
+                func.date(Viagem.criado_em) >= inicio_sem,
+                Viagem.km_final != None
+            ).scalar() or 0
+        )
+        km_mes = float(
+            db.session.query(func.sum(Viagem.km_final - Viagem.km_inicial))
+            .filter(
+                Viagem.cliente_id == cliente_id,
+                Viagem.status == StatusViagem.FINALIZADA,
+                func.date(Viagem.criado_em) >= inicio_mes,
+                Viagem.km_final != None
+            ).scalar() or 0
+        )
+
+        viagens_por_tipo_mes = (
+            db.session.query(TipoViagem.nome, func.count(Viagem.id))
+            .join(Viagem, TipoViagem.id == Viagem.tipo_viagem_id)
+            .filter(
+                Viagem.cliente_id == cliente_id,
+                func.date(Viagem.criado_em) >= inicio_mes
+            )
+            .group_by(TipoViagem.nome)
+            .order_by(func.count(Viagem.id).desc())
+            .all()
+        )
+
+        # ── Abastecimentos ────────────────────────────────────
+        def _abast(desde):
+            r = (
+                db.session.query(
+                    func.sum(Abastecimento.quantidade),
+                    func.sum(Abastecimento.valor)
+                )
+                .filter(
+                    Abastecimento.cliente_id == cliente_id,
+                    Abastecimento.data >= desde
+                ).first()
+            )
+            return float(r[0] or 0), float(r[1] or 0)
+
+        abast_sem_litros, abast_sem_valor = _abast(inicio_sem)
+        abast_mes_litros, abast_mes_valor = _abast(inicio_mes)
+
+        # ── Últimas viagens ───────────────────────────────────
+        ultimas_viagens = (
+            Viagem.query
+            .filter_by(cliente_id=cliente_id)
+            .order_by(Viagem.criado_em.desc())
+            .limit(10).all()
+        )
+
+        return render_template('dashbird.html',
+            total_veiculos=total_veiculos,
+            veiculos_status=veiculos_status,
+            veiculos_em_oficina=veiculos_em_oficina,
+            total_em_oficina=total_em_oficina,
+            viagens_em_andamento=viagens_em_andamento,
+            viagens_status=viagens_status,
+            viagens_semana=viagens_semana,
+            viagens_mes=viagens_mes,
+            km_semana=km_semana,
+            km_mes=km_mes,
+            viagens_por_tipo_mes=viagens_por_tipo_mes,
+            abast_sem_litros=abast_sem_litros,
+            abast_sem_valor=abast_sem_valor,
+            abast_mes_litros=abast_mes_litros,
+            abast_mes_valor=abast_mes_valor,
+            ultimas_viagens=ultimas_viagens,
+            hoje=hoje,
+            inicio_sem=inicio_sem,
+            inicio_mes=inicio_mes,
+        )
 
     @app.context_processor
     def inject_context():
@@ -138,7 +252,7 @@ def seed_basico():
         db.session.add(UsuarioCliente(usuario_id=admin.id, cliente_id=cliente.id))
 
     menus_base = [
-        ('dashboard',      'Dashboard',       'dashboard',               'bi-speedometer2',  1),
+        ('dashboard',      'Acesso Rápido',   'dashboard',               'bi-grid-3x3-gap',  1),
         ('veiculo',        'Veículos',        'veiculo.listar',          'bi-car-front',     10),
         ('motorista',      'Motoristas',      'motorista.listar',        'bi-person-badge',  11),
         ('viagem',         'Viagens',         'viagem.listar',           'bi-map',           12),
