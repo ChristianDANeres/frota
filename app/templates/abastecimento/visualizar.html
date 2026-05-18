@@ -35,8 +35,11 @@
             <dt class="col-sm-3">Quantidade (L)</dt>
             <dd class="col-sm-9">{{ obj.quantidade }}</dd>
 
+            <dt class="col-sm-3">Combustível</dt>
+            <dd class="col-sm-9">{{ obj.tipo_combustivel or '-' }}</dd>
+
             <dt class="col-sm-3">Valor</dt>
-            <dd class="col-sm-9">R$ {{ '%.2f' % obj.valor if obj.valor else '-' }}</dd>
+            <dd class="col-sm-9">{{ obj.valor | format_money }}</dd>
 
             <dt class="col-sm-3">Criado em</dt>
             <dd class="col-sm-9">{{ obj.criado_em.strftime('%d/%m/%Y %H:%M') if obj.criado_em else '-' }}</dd>

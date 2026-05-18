@@ -17,6 +17,105 @@ def load_user(user_id):
     return Usuario.query.get(int(user_id))
 
 
+def _aplicar_patches_banco():
+    """Aplica alterações de esquema de forma idempotente a cada startup.
+
+    Usa blocos DO $$ ... $$ do PostgreSQL para verificar antes de criar,
+    garantindo que rodar múltiplas vezes não cause erros.
+    """
+    from sqlalchemy import text
+    patches = [
+        # 0005 — coluna cpf em usuario
+        "ALTER TABLE usuario ADD COLUMN IF NOT EXISTS cpf VARCHAR(20)",
+        # 0007 — coluna tipo_combustivel em abastecimento
+        "ALTER TABLE abastecimento ADD COLUMN IF NOT EXISTS tipo_combustivel VARCHAR(40)",
+        # 0005 — constraint unique de cpf em usuario
+        """DO $$ BEGIN
+             IF NOT EXISTS (
+               SELECT 1 FROM pg_constraint WHERE conname = 'uq_usuario_cpf'
+             ) THEN
+               ALTER TABLE usuario ADD CONSTRAINT uq_usuario_cpf UNIQUE (cpf);
+             END IF;
+           END $$""",
+        # 0006 — constraint unique de cnh em motorista
+        """DO $$ BEGIN
+             IF NOT EXISTS (
+               SELECT 1 FROM pg_constraint WHERE conname = 'uq_motorista_cliente_cnh'
+             ) THEN
+               ALTER TABLE motorista ADD CONSTRAINT uq_motorista_cliente_cnh UNIQUE (cliente_id, cnh);
+             END IF;
+           END $$""",
+    ]
+    with db.engine.connect() as conn:
+        for sql in patches:
+            try:
+                conn.execute(text(sql))
+            except Exception:
+                pass
+        conn.commit()
+
+
+def seed_basico():
+    admin_user = os.getenv('ADMIN_USER', 'admin')
+    admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
+    admin_email = os.getenv('ADMIN_EMAIL', 'admin@frota.local')
+
+    cliente = Cliente.query.filter_by(nome='Cliente Padrão').first()
+    if not cliente:
+        cliente = Cliente(nome='Cliente Padrão')
+        db.session.add(cliente)
+        db.session.flush()
+
+    admin = Usuario.query.filter_by(username=admin_user).first()
+    if not admin:
+        admin = Usuario(username=admin_user, nome='Administrador', email=admin_email, ativo=True, is_admin=True)
+        admin.set_senha(admin_password)
+        db.session.add(admin)
+        db.session.flush()
+
+    if not UsuarioCliente.query.filter_by(usuario_id=admin.id, cliente_id=cliente.id).first():
+        db.session.add(UsuarioCliente(usuario_id=admin.id, cliente_id=cliente.id))
+
+    menus_base = [
+        ('dashboard',      'Acesso Rápido',   'dashboard',               'bi-grid-3x3-gap',  1),
+        ('veiculo',        'Veículos',        'veiculo.listar',          'bi-car-front',     10),
+        ('motorista',      'Motoristas',      'motorista.listar',        'bi-person-badge',  11),
+        ('viagem',         'Viagens',         'viagem.listar',           'bi-map',           12),
+        ('abastecimento',  'Abastecimentos',  'abastecimento.listar',    'bi-fuel-pump',     13),
+        ('montadora',      'Montadoras',      'montadora.listar',        'bi-building-gear', 20),
+        ('cor',            'Cores',           'cor.listar',              'bi-palette',       21),
+        ('tipo_arquivo',   'Tipos de Arquivo','tipo_arquivo.listar',     'bi-file-earmark',  22),
+        ('tipo_viagem',    'Tipos de Viagem', 'tipo_viagem.listar',      'bi-signpost-2',    23),
+        ('status_veiculo', 'Status Veículo',  'status_veiculo.listar',   'bi-check-circle',  24),
+        ('oficina',         'Oficinas',        'oficina.listar',          'bi-wrench',        25),
+        ('veiculo_oficina', 'Veículos Oficina', 'veiculo_oficina.listar',  'bi-tools',         26),
+    ]
+    menus_criados = []
+    for codigo, nome, endpoint, icone, ordem in menus_base:
+        menu = Menu.query.filter_by(cliente_id=cliente.id, codigo=codigo).first()
+        if not menu:
+            menu = Menu(cliente_id=cliente.id, codigo=codigo, nome=nome,
+                        endpoint=endpoint, icone=icone, ordem=ordem)
+            db.session.add(menu)
+            db.session.flush()
+        menus_criados.append(menu)
+
+    perfil = Perfil.query.filter_by(cliente_id=cliente.id, nome='Administrador').first()
+    if not perfil:
+        perfil = Perfil(cliente_id=cliente.id, nome='Administrador', descricao='Acesso total ao sistema')
+        db.session.add(perfil)
+        db.session.flush()
+
+    for menu in menus_criados:
+        if not PerfilMenu.query.filter_by(perfil_id=perfil.id, menu_id=menu.id).first():
+            db.session.add(PerfilMenu(perfil_id=perfil.id, menu_id=menu.id))
+
+    if not UsuarioPerfil.query.filter_by(usuario_id=admin.id, perfil_id=perfil.id).first():
+        db.session.add(UsuarioPerfil(usuario_id=admin.id, perfil_id=perfil.id))
+
+    db.session.commit()
+
+
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
@@ -61,12 +160,8 @@ def create_app():
     @app.route('/')
     @login_required
     def dashboard():
-        cliente_id = session.get('cliente_id')
-        if not cliente_id:
-            return redirect(url_for('cliente.selecionar'))
-        menus = Menu.query.filter_by(cliente_id=cliente_id, ativo=True).order_by(Menu.ordem, Menu.nome).all()
-        menus = [m for m in menus if current_user.tem_permissao_menu(m.codigo)]
-        return render_template('dashboard.html', menus=menus)
+        # A página principal padrão deve ser as Análises (dashbird)
+        return redirect(url_for('dashbird'))
 
     @app.route('/dashbird')
     @login_required
@@ -222,71 +317,14 @@ def create_app():
     with app.app_context():
         db.create_all()
         seed_basico()
+        _aplicar_patches_banco()
 
     # filtros de template
     from app.utils import format_cpf
     app.add_template_filter(format_cpf, name='format_cpf')
+    from app.utils import format_money
+    app.add_template_filter(format_money, name='format_money')
 
     return app
 
-
-def seed_basico():
-    admin_user = os.getenv('ADMIN_USER', 'admin')
-    admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
-    admin_email = os.getenv('ADMIN_EMAIL', 'admin@frota.local')
-
-    cliente = Cliente.query.filter_by(nome='Cliente Padrão').first()
-    if not cliente:
-        cliente = Cliente(nome='Cliente Padrão')
-        db.session.add(cliente)
-        db.session.flush()
-
-    admin = Usuario.query.filter_by(username=admin_user).first()
-    if not admin:
-        admin = Usuario(username=admin_user, nome='Administrador', email=admin_email, ativo=True, is_admin=True)
-        admin.set_senha(admin_password)
-        db.session.add(admin)
-        db.session.flush()
-
-    if not UsuarioCliente.query.filter_by(usuario_id=admin.id, cliente_id=cliente.id).first():
-        db.session.add(UsuarioCliente(usuario_id=admin.id, cliente_id=cliente.id))
-
-    menus_base = [
-        ('dashboard',      'Acesso Rápido',   'dashboard',               'bi-grid-3x3-gap',  1),
-        ('veiculo',        'Veículos',        'veiculo.listar',          'bi-car-front',     10),
-        ('motorista',      'Motoristas',      'motorista.listar',        'bi-person-badge',  11),
-        ('viagem',         'Viagens',         'viagem.listar',           'bi-map',           12),
-        ('abastecimento',  'Abastecimentos',  'abastecimento.listar',    'bi-fuel-pump',     13),
-        ('montadora',      'Montadoras',      'montadora.listar',        'bi-building-gear', 20),
-        ('cor',            'Cores',           'cor.listar',              'bi-palette',       21),
-        ('tipo_arquivo',   'Tipos de Arquivo','tipo_arquivo.listar',     'bi-file-earmark',  22),
-        ('tipo_viagem',    'Tipos de Viagem', 'tipo_viagem.listar',      'bi-signpost-2',    23),
-        ('status_veiculo', 'Status Veículo',  'status_veiculo.listar',   'bi-check-circle',  24),
-        ('oficina',         'Oficinas',        'oficina.listar',          'bi-wrench',        25),
-        ('veiculo_oficina', 'Veículos Oficina', 'veiculo_oficina.listar',  'bi-tools',         26),
-    ]
-    menus_criados = []
-    for codigo, nome, endpoint, icone, ordem in menus_base:
-        menu = Menu.query.filter_by(cliente_id=cliente.id, codigo=codigo).first()
-        if not menu:
-            menu = Menu(cliente_id=cliente.id, codigo=codigo, nome=nome,
-                        endpoint=endpoint, icone=icone, ordem=ordem)
-            db.session.add(menu)
-            db.session.flush()
-        menus_criados.append(menu)
-
-    perfil = Perfil.query.filter_by(cliente_id=cliente.id, nome='Administrador').first()
-    if not perfil:
-        perfil = Perfil(cliente_id=cliente.id, nome='Administrador', descricao='Acesso total ao sistema')
-        db.session.add(perfil)
-        db.session.flush()
-
-    for menu in menus_criados:
-        if not PerfilMenu.query.filter_by(perfil_id=perfil.id, menu_id=menu.id).first():
-            db.session.add(PerfilMenu(perfil_id=perfil.id, menu_id=menu.id))
-
-    if not UsuarioPerfil.query.filter_by(usuario_id=admin.id, perfil_id=perfil.id).first():
-        db.session.add(UsuarioPerfil(usuario_id=admin.id, perfil_id=perfil.id))
-
-    db.session.commit()
 

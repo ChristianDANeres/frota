@@ -23,8 +23,73 @@ body { background: var(--body-bg); font-family: 'Inter', 'Segoe UI', sans-serif;
   background: var(--sidebar-bg);
   display: flex; flex-direction: column;
   z-index: 1000; overflow-y: auto;
-  transition: transform .3s ease;
+  transition: transform .25s ease, width .25s ease;
 }
+
+:root {
+  --sidebar-collapsed-width: 72px;
+}
+
+#sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* hide texts and labels when collapsed */
+#sidebar.collapsed .nav-text,
+#sidebar.collapsed .btn-label,
+#sidebar.collapsed .brand-text {
+  display: none;
+}
+
+/* hide section chevrons and make section buttons compact when collapsed */
+#sidebar.collapsed .sidebar-section {
+  padding: 6px 0;
+}
+#sidebar.collapsed .sidebar-section .btn-toggle-section {
+  width: 100%;
+  padding: 6px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: none;
+}
+#sidebar.collapsed .sidebar-section .btn-toggle-section .toggle-icon {
+  display: none;
+}
+
+/* ensure collapsed nav links are perfectly centered icons */
+#sidebar.collapsed .nav-link {
+  justify-content: center; padding: 10px 0; border-radius: 0; margin: 6px 0;
+}
+
+/* section button icon styling */
+.btn-toggle-section { display:flex; align-items:center; gap:8px; background:transparent; border:none; color:inherit; width:100%; padding:10px 16px; }
+.btn-toggle-section .section-icon { width:28px; text-align:center; font-size:1.05rem; }
+.btn-toggle-section .toggle-icon { margin-left:auto; }
+
+#sidebar.collapsed .btn-toggle-section { justify-content:center; padding:8px 0; }
+#sidebar.collapsed .btn-toggle-section .section-icon { margin:0; }
+
+/* subtle hover background for icons in collapsed mode */
+#sidebar.collapsed .nav-link:hover { background: rgba(255,255,255,0.04); }
+
+#sidebar .nav-link {
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+}
+
+#sidebar .nav-link i {
+  font-size: 1.2rem;
+  width: 28px; text-align: center;
+}
+
+#sidebar .sidebar-brand { display:flex; align-items:center; gap:8px; padding:16px; }
+
+/* when collapsed, center icons vertically */
+#sidebar.collapsed .nav-link { justify-content: center; padding: 12px 0; }
+
+#sidebar.collapsed ~ #topbar { left: var(--sidebar-collapsed-width); }
+#sidebar.collapsed ~ #main-content { margin-left: var(--sidebar-collapsed-width); }
 #sidebar .sidebar-brand {
   display: flex; align-items: center; gap: 10px;
   padding: 20px 20px 10px;
@@ -63,7 +128,7 @@ body { background: var(--body-bg); font-family: 'Inter', 'Segoe UI', sans-serif;
 
 /* ── Topbar ── */
 #topbar {
-  position: fixed; top: 0; left: var(--sidebar-width);
+  position: fixed; top: 0; left: var(--sidebar-width); /* shift when sidebar present */
   right: 0; height: var(--topbar-height);
   background: #fff; border-bottom: 1px solid #e2e8f0;
   display: flex; align-items: center; justify-content: space-between;
@@ -144,10 +209,15 @@ body { background: var(--body-bg); font-family: 'Inter', 'Segoe UI', sans-serif;
 .page-header h4 { font-weight: 700; color: #1a202c; margin: 0; }
 
 /* ── Responsive ── */
+/* When sidebar has .show, shift topbar and main content */
+#sidebar.show { transform: translateX(0); }
+
 @media (max-width: 768px) {
-  #sidebar { transform: translateX(-100%); }
+  /* mobile: sidebar hidden by default (sandwich), toggled with .show */
+  #sidebar { transform: translateX(-100%); left: 0; }
   #sidebar.show { transform: translateX(0); }
-  #main-content { margin-left: 0; }
-  #topbar { left: 0; }
+  /* overlay on mobile, don't shift topbar/main-content */
+  #topbar { left: 0 !important; }
+  #main-content { margin-left: 0 !important; }
 }
 

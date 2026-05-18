@@ -28,10 +28,17 @@
                     <div class="invalid-feedback">{{ erro }}</div>
                     {% endfor %}
                 </div>
-                <div class="col-md-5 mb-3">
+                <div class="col-md-4 mb-3">
                     {{ form.motorista_id.label(class='form-label') }}
                     {{ form.motorista_id(class='form-select' + (' is-invalid' if form.motorista_id.errors else '')) }}
                     {% for erro in form.motorista_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.tipo_combustivel.label(class='form-label') }}
+                    {{ form.tipo_combustivel(class='form-select' + (' is-invalid' if form.tipo_combustivel.errors else '')) }}
+                    {% for erro in form.tipo_combustivel.errors %}
                     <div class="invalid-feedback">{{ erro }}</div>
                     {% endfor %}
                 </div>
@@ -53,9 +60,12 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     {{ form.valor.label(class='form-label') }}
-                    {{ form.valor(class='form-control' + (' is-invalid' if form.valor.errors else '')) }}
+                    <div class="input-group">
+                        <span class="input-group-text">R$</span>
+                        {{ form.valor(class='form-control' + (' is-invalid' if form.valor.errors else '')) }}
+                    </div>
                     {% for erro in form.valor.errors %}
-                    <div class="invalid-feedback">{{ erro }}</div>
+                    <div class="invalid-feedback d-block">{{ erro }}</div>
                     {% endfor %}
                 </div>
             </div>

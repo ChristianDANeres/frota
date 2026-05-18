@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileSize
 from wtforms import DecimalField, DateField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Optional, NumberRange
+from app.forms.veiculo_form import COMBUSTIVEIS
 
 
 class AbastecimentoForm(FlaskForm):
@@ -9,7 +10,8 @@ class AbastecimentoForm(FlaskForm):
     veiculo_id = SelectField('Veículo', coerce=int, validators=[DataRequired()])
     motorista_id = SelectField('Motorista', coerce=int, validators=[Optional()])
     km = DecimalField('KM', places=2, validators=[DataRequired(), NumberRange(min=0)])
-    quantidade = DecimalField('Quantidade (L)', places=3, validators=[DataRequired(), NumberRange(min=0)])
+    quantidade = DecimalField('Quantidade (L)', places=3, validators=[DataRequired(), NumberRange(min=0, max=999)])
+    tipo_combustivel = SelectField('Combustível', choices=COMBUSTIVEIS, validators=[Optional()])
     valor = DecimalField('Valor Total (R$)', places=2, validators=[DataRequired(), NumberRange(min=0)])
     submit = SubmitField('Salvar')
 

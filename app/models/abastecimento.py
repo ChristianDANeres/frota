@@ -11,6 +11,7 @@ class Abastecimento(TenantMixin, TimestampMixin, db.Model):
     veiculo_id = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=False)
     km = db.Column(db.Numeric(10, 2), nullable=False)
     quantidade = db.Column(db.Numeric(10, 3), nullable=False)
+    tipo_combustivel = db.Column(db.String(40))
     valor = db.Column(db.Numeric(10, 2), nullable=False)
     motorista_id = db.Column(db.Integer, db.ForeignKey('motorista.id'))
 

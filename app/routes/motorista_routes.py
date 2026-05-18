@@ -31,18 +31,26 @@ def listar():
 def novo():
     form = MotoristaForm()
     if form.validate_on_submit():
-        obj = Motorista(
-            cliente_id=session['cliente_id'],
-            cpf=form.cpf.data.strip(),
-            nome=form.nome.data,
-            data_nascimento=form.data_nascimento.data,
-            cnh=form.cnh.data.strip(),
-            ativo=form.ativo.data,
-        )
-        db.session.add(obj)
-        db.session.commit()
-        flash('Motorista criado com sucesso.', 'success')
-        return redirect(url_for('motorista.listar'))
+        cliente_id = session['cliente_id']
+        cpf = form.cpf.data.strip()
+        cnh = form.cnh.data.strip()
+        if Motorista.query.filter_by(cliente_id=cliente_id, cpf=cpf).first():
+            form.cpf.errors.append('Este CPF já está cadastrado.')
+        elif Motorista.query.filter_by(cliente_id=cliente_id, cnh=cnh).first():
+            form.cnh.errors.append('Esta CNH já está cadastrada.')
+        else:
+            obj = Motorista(
+                cliente_id=cliente_id,
+                cpf=cpf,
+                nome=form.nome.data,
+                data_nascimento=form.data_nascimento.data,
+                cnh=cnh,
+                ativo=form.ativo.data,
+            )
+            db.session.add(obj)
+            db.session.commit()
+            flash('Motorista criado com sucesso.', 'success')
+            return redirect(url_for('motorista.listar'))
     return render_template('motorista/form.html', form=form, titulo='Novo Motorista')
 
 
@@ -54,14 +62,32 @@ def editar(id):
     obj = Motorista.query.filter_by(id=id, cliente_id=session['cliente_id']).first_or_404()
     form = MotoristaForm()
     if form.validate_on_submit():
-        obj.cpf = form.cpf.data.strip()
-        obj.nome = form.nome.data
-        obj.data_nascimento = form.data_nascimento.data
-        obj.cnh = form.cnh.data.strip()
-        obj.ativo = form.ativo.data
-        db.session.commit()
-        flash('Motorista atualizado.', 'success')
-        return redirect(url_for('motorista.listar'))
+        cliente_id = session['cliente_id']
+        cpf = form.cpf.data.strip()
+        cnh = form.cnh.data.strip()
+        cpf_dup = Motorista.query.filter(
+            Motorista.cliente_id == cliente_id,
+            Motorista.cpf == cpf,
+            Motorista.id != id
+        ).first()
+        cnh_dup = Motorista.query.filter(
+            Motorista.cliente_id == cliente_id,
+            Motorista.cnh == cnh,
+            Motorista.id != id
+        ).first()
+        if cpf_dup:
+            form.cpf.errors.append('Este CPF já está cadastrado em outro motorista.')
+        elif cnh_dup:
+            form.cnh.errors.append('Esta CNH já está cadastrada em outro motorista.')
+        else:
+            obj.cpf = cpf
+            obj.nome = form.nome.data
+            obj.data_nascimento = form.data_nascimento.data
+            obj.cnh = cnh
+            obj.ativo = form.ativo.data
+            db.session.commit()
+            flash('Motorista atualizado.', 'success')
+            return redirect(url_for('motorista.listar'))
     form.cpf.data = obj.cpf
     form.nome.data = obj.nome
     form.data_nascimento.data = obj.data_nascimento

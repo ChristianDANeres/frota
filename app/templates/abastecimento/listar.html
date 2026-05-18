@@ -31,7 +31,7 @@
                     <td>{{ obj.motorista.nome if obj.motorista else '-' }}</td>
                     <td>{{ obj.km }}</td>
                     <td>{{ obj.quantidade }}</td>
-                    <td>R$ {{ '%.2f' % obj.valor if obj.valor else '-' }}</td>
+                    <td>{{ obj.valor | format_money }}</td>
                     <td class="text-end">
                         <a href="{{ url_for('abastecimento.anexos', id=obj.id) }}" class="btn btn-sm btn-outline-secondary" title="Anexos">
                             <i class="bi bi-paperclip"></i>

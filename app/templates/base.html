@@ -13,19 +13,23 @@
 
 <!-- ── Sidebar ── -->
 <nav id="sidebar">
-  <a class="sidebar-brand" href="{{ url_for('dashboard') }}">
-    <i class="bi bi-truck-front-fill"></i> FROTA
+  <a class="sidebar-brand" href="{{ url_for('dashbird') }}">
+    <i class="bi bi-truck-front-fill"></i> <span class="brand-text">FROTA</span>
   </a>
 
     <div class="sidebar-section">
-    <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-principal" aria-expanded="true" aria-controls="section-principal">Principal <i class="bi bi-chevron-down toggle-icon"></i></button>
+    <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-principal" aria-expanded="true" aria-controls="section-principal">
+      <i class="bi bi-grid-3x3-gap section-icon"></i>
+      <span class="btn-label">Principal</span>
+      <i class="bi bi-chevron-down toggle-icon"></i>
+    </button>
   </div>
   <div class="collapse show" id="section-principal">
     <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
-      <i class="bi bi-grid-3x3-gap"></i> Acesso Rápido
+      <i class="bi bi-grid-3x3-gap"></i> <span class="nav-text">Acesso Rápido</span>
     </a>
     <a href="{{ url_for('dashbird') }}" class="nav-link {% if request.endpoint == 'dashbird' %}active{% endif %}">
-      <i class="bi bi-bar-chart-line"></i> Análises
+      <i class="bi bi-bar-chart-line"></i> <span class="nav-text">Análises</span>
     </a>
   </div>
 
@@ -38,7 +42,11 @@
 
     {% if menus_sidebar | selectattr('codigo', 'in', grupo_frota) | list %}
     <div class="sidebar-section">
-      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-frota" aria-expanded="false" aria-controls="section-frota">Frota <i class="bi bi-chevron-down toggle-icon"></i></button>
+      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-frota" aria-expanded="false" aria-controls="section-frota">
+        <i class="bi bi-truck section-icon"></i>
+        <span class="btn-label">Frota</span>
+        <i class="bi bi-chevron-down toggle-icon"></i>
+      </button>
     </div>
     <div class="collapse" id="section-frota">
     {% endif %}
@@ -46,7 +54,7 @@
       {% if m.codigo in grupo_frota %}
       <a href="{{ url_for(m.endpoint) if m.endpoint else '#' }}"
          class="nav-link {% if request.endpoint and request.endpoint.startswith(m.codigo) %}active{% endif %}">
-        <i class="bi {{ m.icone or 'bi-circle' }}"></i> {{ m.nome }}
+        <i class="bi {{ m.icone or 'bi-circle' }}"></i> <span class="nav-text">{{ m.nome }}</span>
       </a>
       {% endif %}
     {% endfor %}
@@ -56,7 +64,11 @@
 
     {% if menus_sidebar | selectattr('codigo', 'in', grupo_tabelas) | list %}
     <div class="sidebar-section">
-      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-tabelas" aria-expanded="false" aria-controls="section-tabelas">Tabelas <i class="bi bi-chevron-down toggle-icon"></i></button>
+      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-tabelas" aria-expanded="false" aria-controls="section-tabelas">
+        <i class="bi bi-table section-icon"></i>
+        <span class="btn-label">Tabelas</span>
+        <i class="bi bi-chevron-down toggle-icon"></i>
+      </button>
     </div>
     <div class="collapse" id="section-tabelas">
     {% endif %}
@@ -64,7 +76,7 @@
       {% if m.codigo in grupo_tabelas %}
       <a href="{{ url_for(m.endpoint) if m.endpoint else '#' }}"
          class="nav-link {% if request.endpoint and request.endpoint.startswith(m.codigo) %}active{% endif %}">
-        <i class="bi {{ m.icone or 'bi-circle' }}"></i> {{ m.nome }}
+        <i class="bi {{ m.icone or 'bi-circle' }}"></i> <span class="nav-text">{{ m.nome }}</span>
       </a>
       {% endif %}
     {% endfor %}
@@ -74,23 +86,27 @@
 
     {% if current_user.is_admin %}
     <div class="sidebar-section">
-      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-adm" aria-expanded="false" aria-controls="section-adm">Administração <i class="bi bi-chevron-down toggle-icon"></i></button>
+      <button class="btn btn-toggle-section" data-bs-toggle="collapse" data-bs-target="#section-adm" aria-expanded="false" aria-controls="section-adm">
+        <i class="bi bi-gear section-icon"></i>
+        <span class="btn-label">Administração</span>
+        <i class="bi bi-chevron-down toggle-icon"></i>
+      </button>
     </div>
     <div class="collapse" id="section-adm">
     <a href="{{ url_for('adm.clientes') }}" class="nav-link {% if request.blueprint == 'adm' and 'clientes' in request.endpoint %}active{% endif %}">
-      <i class="bi bi-building"></i> Clientes
+      <i class="bi bi-building"></i> <span class="nav-text">Clientes</span>
     </a>
     <a href="{{ url_for('adm.usuarios') }}" class="nav-link {% if request.blueprint == 'adm' and 'usuario' in request.endpoint %}active{% endif %}">
-      <i class="bi bi-people"></i> Usuários
+      <i class="bi bi-people"></i> <span class="nav-text">Usuários</span>
     </a>
     <a href="{{ url_for('adm.perfis') }}" class="nav-link {% if request.blueprint == 'adm' and 'perfil' in request.endpoint %}active{% endif %}">
-      <i class="bi bi-person-badge"></i> Perfis
+      <i class="bi bi-person-badge"></i> <span class="nav-text">Perfis</span>
     </a>
     <a href="{{ url_for('adm.menus') }}" class="nav-link {% if request.blueprint == 'adm' and 'menu' in request.endpoint %}active{% endif %}">
-      <i class="bi bi-list-check"></i> Menus
+      <i class="bi bi-list-check"></i> <span class="nav-text">Menus</span>
     </a>
     <a href="{{ url_for('oficina.listar') }}" class="nav-link {% if request.blueprint == 'oficina' %}active{% endif %}">
-      <i class="bi bi-wrench"></i> Oficinas
+      <i class="bi bi-wrench"></i> <span class="nav-text">Oficinas</span>
     </a>
     </div>
     {% endif %}
@@ -101,6 +117,9 @@
 <div id="topbar">
   <div class="d-flex align-items-center gap-3">
     <button class="btn btn-sm btn-outline-secondary d-md-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
+      <i class="bi bi-list"></i>
+    </button>
+    <button class="btn btn-sm btn-outline-secondary d-none d-md-inline" id="sidebar-collapse-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
       <i class="bi bi-list"></i>
     </button>
     <span class="topbar-title">{% block page_title %}{% endblock %}</span>

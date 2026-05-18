@@ -16,6 +16,7 @@ def _preencher_choices(form, cliente_id):
     form.veiculo_id.choices = [(0, 'Selecione...')] + [(v.id, f'{v.placa} – {v.modelo or ""}') for v in veiculos]
     motoristas = Motorista.query.filter_by(cliente_id=cliente_id, ativo=True).order_by(Motorista.nome).all()
     form.motorista_id.choices = [(0, 'Selecione...')] + [(m.id, m.nome) for m in motoristas]
+    # combustivel choices são estáticas no formulário
 
 
 @abastecimento_bp.route('/')
@@ -46,6 +47,7 @@ def novo():
             motorista_id=form.motorista_id.data or None,
             km=form.km.data,
             quantidade=form.quantidade.data,
+            tipo_combustivel=form.tipo_combustivel.data or None,
             valor=form.valor.data,
         )
         db.session.add(obj)
@@ -69,6 +71,7 @@ def editar(id):
         obj.motorista_id = form.motorista_id.data or None
         obj.km = form.km.data
         obj.quantidade = form.quantidade.data
+        obj.tipo_combustivel = form.tipo_combustivel.data or None
         obj.valor = form.valor.data
         db.session.commit()
         flash('Abastecimento atualizado.', 'success')
@@ -78,6 +81,7 @@ def editar(id):
     form.motorista_id.data = obj.motorista_id or 0
     form.km.data = obj.km
     form.quantidade.data = obj.quantidade
+    form.tipo_combustivel.data = obj.tipo_combustivel or ''
     form.valor.data = obj.valor
     return render_template('abastecimento/form.html', form=form, titulo='Editar Abastecimento', obj=obj)
 

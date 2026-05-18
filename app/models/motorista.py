@@ -5,7 +5,10 @@ from app.models.mixins import TimestampMixin, TenantMixin
 
 class Motorista(TenantMixin, TimestampMixin, db.Model):
     __tablename__ = 'motorista'
-    __table_args__ = (db.UniqueConstraint('cliente_id', 'cpf', name='uq_motorista_cliente_cpf'),)
+    __table_args__ = (
+        db.UniqueConstraint('cliente_id', 'cpf', name='uq_motorista_cliente_cpf'),
+        db.UniqueConstraint('cliente_id', 'cnh', name='uq_motorista_cliente_cnh'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     cpf = db.Column(db.String(14), nullable=False)
