@@ -57,14 +57,14 @@
 <div class="card shadow-sm">
     <div class="card-header fw-semibold">Adicionar Anexo</div>
     <div class="card-body">
-        <form method="POST" enctype="multipart/form-data" action="{{ url_for('abastecimento.upload_anexo', id=obj.id) }}">
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('abastecimento.anexos', id=obj.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="tipo_arquivo_id" class="form-label">Tipo de Arquivo</label>
                     <select name="tipo_arquivo_id" id="tipo_arquivo_id" class="form-select">
                         <option value="">Selecione...</option>
-                        {% for t in tipos_arquivo %}
+                        {% for t in tipos %}
                         <option value="{{ t.id }}">{{ t.nome }}</option>
                         {% endfor %}
                     </select>

@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from app.extensions import db
 from app.models.mixins import TimestampMixin, TenantMixin
@@ -40,3 +41,16 @@ class DiarioAnexo(db.Model):
     cliente      = db.relationship('Cliente')
     diario       = db.relationship('Diario', back_populates='anexos')
     tipo_arquivo = db.relationship('TipoArquivo')
+
+    @property
+    def url_relativa(self):
+        """Caminho relativo ao static/ para uso em url_for."""
+        path = self.caminho_arquivo.replace('\\', '/')
+        m = re.search(r'/static/(.+)$', path)
+        return m.group(1) if m else None
+
+    @property
+    def eh_imagem(self):
+        if not self.nome_arquivo:
+            return False
+        return self.nome_arquivo.rsplit('.', 1)[-1].lower() in ('jpg', 'jpeg', 'png', 'gif', 'webp')

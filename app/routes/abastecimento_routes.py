@@ -138,7 +138,7 @@ def anexos(id):
         db.session.commit()
         flash('Anexo enviado com sucesso.', 'success')
         return redirect(url_for('abastecimento.anexos', id=obj.id))
-    return render_template('abastecimento/anexos.html', obj=obj, form=form)
+    return render_template('abastecimento/anexos.html', obj=obj, form=form, tipos=tipos)
 
 
 @abastecimento_bp.route('/<int:id>/anexos/<int:anexo_id>/excluir', methods=['POST'])
