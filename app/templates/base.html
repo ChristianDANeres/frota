@@ -36,7 +36,7 @@
   {% if current_user.is_authenticated %}
     {% set menus_sidebar = menus_nav | default([]) %}
 
-    {% set grupo_frota = ['veiculo','motorista','viagem','abastecimento','oficina','veiculo_oficina'] %}
+    {% set grupo_frota = ['veiculo','motorista','viagem','abastecimento','oficina','veiculo_oficina','intercorrencia','diario'] %}
     {% set grupo_tabelas = ['montadora','cor','tipo_arquivo','tipo_viagem','status_veiculo'] %}
     {% set grupo_adm = ['adm'] %}
 

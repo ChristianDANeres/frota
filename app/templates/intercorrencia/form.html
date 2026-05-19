@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">{{ titulo }}</h4>
+    <a href="{{ url_for('intercorrencia.listar') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<form method="POST" id="form-intercorrencia">
+    {{ form.hidden_tag() }}
+
+    {# ── Seção: Vínculo com viagem ── #}
+    <div class="card shadow-sm mb-3">
+        <div class="card-header fw-semibold bg-dark text-white">
+            <i class="bi bi-map"></i> Viagem
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.viagem_id.label(class='form-label') }}
+                    {{ form.viagem_id(class='form-select' + (' is-invalid' if form.viagem_id.errors else ''),
+                                      id='sel-viagem',
+                                      **({'disabled': 'disabled'} if obj else {})) }}
+                    {% if obj %}
+                    {# campo hidden para garantir envio do valor em edição #}
+                    <input type="hidden" name="viagem_id" value="{{ obj.viagem_id }}">
+                    {% endif %}
+                    {% for erro in form.viagem_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                    {% if not obj %}
+                    <div class="form-text">Somente viagens com status <strong>Iniciada</strong> aparecem na lista.</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.viagem_paciente_id.label(class='form-label') }}
+                    {{ form.viagem_paciente_id(class='form-select' + (' is-invalid' if form.viagem_paciente_id.errors else ''),
+                                               id='sel-paciente') }}
+                    {% for erro in form.viagem_paciente_id.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                    <div class="form-text">Selecionar um paciente preenche o nome automaticamente.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Seção: Cabeçalho ── #}
+    <div class="card shadow-sm mb-3">
+        <div class="card-header fw-semibold bg-dark text-white">
+            <i class="bi bi-info-circle"></i> Dados do Transporte
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.local_origem.label(class='form-label') }}
+                    {{ form.local_origem(class='form-control' + (' is-invalid' if form.local_origem.errors else '')) }}
+                    {% for erro in form.local_origem.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.local_destino.label(class='form-label') }}
+                    {{ form.local_destino(class='form-control' + (' is-invalid' if form.local_destino.errors else '')) }}
+                    {% for erro in form.local_destino.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    {{ form.data_transporte.label(class='form-label') }}
+                    {{ form.data_transporte(class='form-control' + (' is-invalid' if form.data_transporte.errors else ''), type='date') }}
+                    {% for erro in form.data_transporte.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    {{ form.horario_ocorrencia.label(class='form-label') }}
+                    {{ form.horario_ocorrencia(class='form-control' + (' is-invalid' if form.horario_ocorrencia.errors else ''), type='time') }}
+                    {% for erro in form.horario_ocorrencia.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Seção: Dados do paciente ── #}
+    <div class="card shadow-sm mb-3">
+        <div class="card-header fw-semibold bg-dark text-white">
+            <i class="bi bi-person"></i> Dados do Paciente
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.paciente_nome.label(class='form-label') }}
+                    {{ form.paciente_nome(class='form-control' + (' is-invalid' if form.paciente_nome.errors else ''),
+                                          id='inp-paciente-nome') }}
+                    {% for erro in form.paciente_nome.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    {{ form.paciente_idade.label(class='form-label') }}
+                    {{ form.paciente_idade(class='form-control' + (' is-invalid' if form.paciente_idade.errors else '')) }}
+                    {% for erro in form.paciente_idade.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    {{ form.paciente_telefone.label(class='form-label') }}
+                    {{ form.paciente_telefone(class='form-control' + (' is-invalid' if form.paciente_telefone.errors else '')) }}
+                    {% for erro in form.paciente_telefone.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.paciente_acompanhante.label(class='form-label') }}
+                    {{ form.paciente_acompanhante(class='form-control' + (' is-invalid' if form.paciente_acompanhante.errors else '')) }}
+                    {% for erro in form.paciente_acompanhante.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Condição física #}
+            <label class="form-label fw-semibold">Condição Física:</label>
+            <div class="row row-cols-1 row-cols-md-2 g-1">
+                <div class="col">
+                    <div class="form-check">
+                        {{ form.cond_deambula(class='form-check-input') }}
+                        {{ form.cond_deambula.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_nao_deambula(class='form-check-input') }}
+                        {{ form.cond_nao_deambula.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_acamado(class='form-check-input') }}
+                        {{ form.cond_acamado.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_cadeirante(class='form-check-input') }}
+                        {{ form.cond_cadeirante.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_dispositivo_mobil(class='form-check-input') }}
+                        {{ form.cond_dispositivo_mobil.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_traqueostomizado(class='form-check-input') }}
+                        {{ form.cond_traqueostomizado.label(class='form-check-label') }}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-check">
+                        {{ form.cond_oxigenio_continuo(class='form-check-input') }}
+                        {{ form.cond_oxigenio_continuo.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_portador_ostomias(class='form-check-input') }}
+                        {{ form.cond_portador_ostomias.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_drenos_dispositivos(class='form-check-input') }}
+                        {{ form.cond_drenos_dispositivos.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_acesso_venoso_periferico(class='form-check-input') }}
+                        {{ form.cond_acesso_venoso_periferico.label(class='form-check-label') }}
+                    </div>
+                    <div class="form-check">
+                        {{ form.cond_acesso_venoso_central(class='form-check-input') }}
+                        {{ form.cond_acesso_venoso_central.label(class='form-check-label') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Seção: Ocorrência ── #}
+    <div class="card shadow-sm mb-3">
+        <div class="card-header fw-semibold bg-dark text-white">
+            <i class="bi bi-exclamation-triangle"></i> Ocorrência / Intercorrência
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                {{ form.descricao_ocorrencia.label(class='form-label') }}
+                {{ form.descricao_ocorrencia(class='form-control', rows=5) }}
+            </div>
+            <div class="mb-3">
+                {{ form.endereco_ocorrencia.label(class='form-label') }}
+                {{ form.endereco_ocorrencia(class='form-control') }}
+            </div>
+            <div class="mb-3">
+                {{ form.socorristas.label(class='form-label') }}
+                {{ form.socorristas(class='form-control') }}
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    {{ form.destino_usuario.label(class='form-label') }}
+                    {{ form.destino_usuario(class='form-select') }}
+                </div>
+                <div class="col-md-2 mb-3">
+                    {{ form.data_atendimento.label(class='form-label') }}
+                    {{ form.data_atendimento(class='form-control', type='date') }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.local_atendimento.label(class='form-label') }}
+                    {{ form.local_atendimento(class='form-control') }}
+                </div>
+            </div>
+            <div class="mb-3">
+                {{ form.observacoes.label(class='form-label') }}
+                {{ form.observacoes(class='form-control', rows=3) }}
+            </div>
+        </div>
+    </div>
+
+    {# ── Status e botão ── #}
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-3 mb-3">
+                    {{ form.status.label(class='form-label') }}
+                    {{ form.status(class='form-select') }}
+                </div>
+                <div class="col-md-9 mb-3 text-end">
+                    {{ form.submit(class='btn btn-primary px-4') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const selViagem   = document.getElementById('sel-viagem');
+    const selPaciente = document.getElementById('sel-paciente');
+    const inpNome     = document.getElementById('inp-paciente-nome');
+
+    function carregarPacientes(viagemId, pacientePreId) {
+        selPaciente.innerHTML = '<option value="0">Selecione...</option>';
+        if (!viagemId || viagemId == 0) return;
+
+        fetch(`/intercorrencia/api/viagem/${viagemId}/pacientes`)
+            .then(r => r.json())
+            .then(lista => {
+                lista.forEach(p => {
+                    const opt = new Option(p.nome, p.id);
+                    if (pacientePreId && p.id == pacientePreId) opt.selected = true;
+                    selPaciente.add(opt);
+                });
+            });
+    }
+
+    // Ao trocar viagem (apenas no formulário de criação)
+    if (selViagem && !selViagem.disabled) {
+        selViagem.addEventListener('change', function () {
+            carregarPacientes(this.value, null);
+        });
+        // Pré-selecionar viagem passada via query string
+        const preId = {{ viagem_pre | default(0) }};
+        if (preId) {
+            selViagem.value = preId;
+            carregarPacientes(preId, null);
+        }
+    }
+
+    // Ao selecionar paciente → preencher nome
+    if (selPaciente) {
+        selPaciente.addEventListener('change', function () {
+            const opt = this.options[this.selectedIndex];
+            if (inpNome && opt.value != 0) inpNome.value = opt.text;
+        });
+    }
+
+    // Na edição, já carrega pacientes da viagem atual
+    {% if obj %}
+    carregarPacientes({{ obj.viagem_id }}, {{ obj.viagem_paciente_id or 0 }});
+    {% endif %}
+}());
+</script>
+{% endblock %}

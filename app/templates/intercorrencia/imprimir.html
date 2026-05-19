@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>ANEXO V – Intercorrência #{{ obj.id }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; background: #fff; }
+
+        .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 15mm; }
+
+        /* Cabeçalho */
+        .cabecalho {
+            background: #8B6914;
+            color: #fff;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12pt;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+        }
+
+        /* Grid de campos */
+        .grade { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+        .grade td, .grade th {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: top;
+        }
+        .label {
+            font-weight: bold;
+            font-size: 9pt;
+            color: #333;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .valor {
+            font-size: 10.5pt;
+            min-height: 18px;
+            display: block;
+        }
+        .area-grande { min-height: 80px; }
+        .area-media  { min-height: 50px; }
+
+        /* Checkboxes */
+        .cond-grid { width: 100%; border: 1px solid #000; padding: 6px; }
+        .cond-label { font-weight: bold; font-size: 9pt; margin-bottom: 4px; display: block; }
+        .cond-item  { display: inline-block; margin-right: 18px; font-size: 10pt; }
+        .cond-item.marcado { font-weight: bold; }
+        .caixa { display: inline-block; width: 13px; height: 13px; border: 1px solid #000;
+                 vertical-align: middle; text-align: center; line-height: 13px; font-size: 9pt;
+                 margin-right: 3px; }
+        .caixa.checked { background: #000; color: #fff; }
+
+        /* Botão de impressão (não aparece na impressão) */
+        .btn-imprimir {
+            display: block; margin: 10px auto; padding: 8px 24px;
+            background: #0d6efd; color: #fff; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 11pt;
+        }
+
+        @media print {
+            .btn-imprimir, .nav-voltar { display: none !important; }
+            body { background: #fff; }
+            .page { padding: 8mm; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    {# Botões de ação (ocultos na impressão) #}
+    <div class="nav-voltar" style="margin-bottom:10px;">
+        <a href="{{ url_for('intercorrencia.visualizar', id=obj.id) }}"
+           style="text-decoration:none; color:#0d6efd;">
+            &larr; Voltar
+        </a>
+    </div>
+
+    <div class="cabecalho">ANEXO V &mdash; Formulário De Intercorrências Durante Transporte</div>
+
+    <table class="grade">
+        <tr>
+            <td style="width:50%">
+                <span class="label">Local de Origem:</span>
+                <span class="valor">{{ obj.local_origem or '&nbsp;' }}</span>
+            </td>
+            <td style="width:50%">
+                <span class="label">Local de Destino:</span>
+                <span class="valor">{{ obj.local_destino or '&nbsp;' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">Data do Transporte:</span>
+                <span class="valor">{{ obj.data_transporte.strftime('%d/%m/%Y') if obj.data_transporte else '&nbsp;' }}</span>
+            </td>
+            <td>
+                <span class="label">Horário da ocorrência / intercorrência:</span>
+                <span class="valor">{{ obj.horario_ocorrencia.strftime('%H:%M') if obj.horario_ocorrencia else '&nbsp;' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span class="label">Nome do Paciente:</span>
+                <span class="valor">{{ obj.paciente_nome }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <table style="width:100%; border-collapse:collapse;">
+                    <tr>
+                        <td style="width:20%; border-right:1px solid #000; padding-right:6px;">
+                            <span class="label">Idade:</span>
+                            <span class="valor">{{ obj.paciente_idade if obj.paciente_idade is not none else '&nbsp;' }}</span>
+                        </td>
+                        <td style="width:40%; border-right:1px solid #000; padding: 0 6px;">
+                            <span class="label">Telefone:</span>
+                            <span class="valor">{{ obj.paciente_telefone or '&nbsp;' }}</span>
+                        </td>
+                        <td style="width:40%; padding-left:6px;">
+                            <span class="label">Acompanhante:</span>
+                            <span class="valor">{{ obj.paciente_acompanhante or '&nbsp;' }}</span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div class="cond-grid">
+                    <span class="cond-label">Condição física:</span>
+
+                    {% macro caixa(val, texto) %}
+                    <span class="cond-item {% if val %}marcado{% endif %}">
+                        <span class="caixa {% if val %}checked{% endif %}">{% if val %}✓{% endif %}</span>{{ texto }}
+                    </span>
+                    {% endmacro %}
+
+                    {{ caixa(obj.cond_deambula, 'Deambula') }}
+                    {{ caixa(obj.cond_nao_deambula, 'Não deambula') }}
+                    <br>
+                    {{ caixa(obj.cond_acamado, 'Acamado') }}
+                    {{ caixa(obj.cond_cadeirante, 'Cadeirante') }}
+                    {{ caixa(obj.cond_dispositivo_mobil, 'Uso de Dispositivos de mobilidade') }}
+                    <br>
+                    {{ caixa(obj.cond_traqueostomizado, 'Traqueostomizado') }}
+                    {{ caixa(obj.cond_oxigenio_continuo, 'Uso de Oxigênio Contínuo') }}
+                    <br>
+                    {{ caixa(obj.cond_portador_ostomias, 'Portador de ostomias') }}
+                    {{ caixa(obj.cond_drenos_dispositivos, 'Em uso de drenos/ dispositivos externos') }}
+                    <br>
+                    {{ caixa(obj.cond_acesso_venoso_periferico, 'Com acesso venoso periférico') }}
+                    {{ caixa(obj.cond_acesso_venoso_central, 'Com acesso venoso central e/ ou catéter duplo-lúmen') }}
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span class="label">Descrição da ocorrência/ intercorrência:</span>
+                <span class="valor area-grande">{{ obj.descricao_ocorrencia or '&nbsp;' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span class="label">Endereço da ocorrência/ intercorrência:</span>
+                <span class="valor area-media">{{ obj.endereco_ocorrencia or '&nbsp;' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span class="label">Socorrista(s):</span>
+                <span class="valor">{{ obj.socorristas or '&nbsp;' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span class="label">Destino do usuário:</span>
+                <span class="valor">
+                    {% macro check_dest(val, nome) %}
+                    <span style="margin-right:16px;">
+                        <span class="caixa {% if val %}checked{% endif %}">{% if val %}✓{% endif %}</span>
+                        {{ nome }}
+                    </span>
+                    {% endmacro %}
+                    {{ check_dest(obj.destino_usuario and obj.destino_usuario.name == 'DOMICILIO', 'Domicílio') }}
+                    {{ check_dest(obj.destino_usuario and obj.destino_usuario.name == 'UPA', 'UPA') }}
+                    {{ check_dest(obj.destino_usuario and obj.destino_usuario.name == 'HOSPITAL', 'Hospital') }}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">Data do atendimento:</span>
+                <span class="valor">{{ obj.data_atendimento.strftime('%d/%m/%Y') if obj.data_atendimento else '&nbsp;' }}</span>
+            </td>
+            <td>
+                <span class="label">Local do atendimento:</span>
+                <span class="valor">{{ obj.local_atendimento or '&nbsp;' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span class="label">Observações:</span>
+                <span class="valor area-media">{{ obj.observacoes or '&nbsp;' }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 6px; font-size: 9pt; color: #555; text-align: right;">
+        Intercorrência #{{ obj.id }} &mdash;
+        Status:
+        {% if obj.status.name == 'EM_ABERTO' %}Em Aberto
+        {% elif obj.status.name == 'EM_ANALISE' %}Em Análise
+        {% else %}Finalizado{% endif %}
+        &mdash; Emitido em {{ agora.strftime('%d/%m/%Y %H:%M') }}
+    </div>
+
+    <button class="btn-imprimir" onclick="window.print()">
+        <span>&#128424;</span> Imprimir
+    </button>
+</div>
+</body>
+</html>

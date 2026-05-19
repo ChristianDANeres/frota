@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Viagem — #{{ obj.id }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #000; background: #fff; }
+        .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
+
+        /* Cabeçalho */
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 16px; }
+        .header h2 { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+        .header p { font-size: 11px; color: #555; }
+
+        /* Título de seção */
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border: 1px solid #999;
+            margin: 16px 0 6px;
+        }
+
+        /* Campos do formulário */
+        .row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+        .field { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
+        .field label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #555; margin-bottom: 2px; }
+        .field .value { border-bottom: 1px solid #666; padding: 3px 2px; min-height: 18px; font-size: 12px; }
+
+        /* Tabela de pacientes */
+        table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px; }
+        table thead tr { background: #e0e0e0; }
+        table th, table td { border: 1px solid #999; padding: 4px 6px; text-align: left; vertical-align: top; }
+        table th { font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        table tbody tr:nth-child(even) { background: #f9f9f9; }
+
+        /* Status badge simples */
+        .status { font-weight: bold; }
+
+        /* Assinaturas */
+        .assinaturas { display: flex; gap: 40px; margin-top: 32px; }
+        .assinatura { flex: 1; text-align: center; }
+        .assinatura .linha { border-top: 1px solid #000; margin-bottom: 4px; }
+        .assinatura p { font-size: 11px; }
+
+        /* Rodapé */
+        .footer { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 10px; color: #777; text-align: right; }
+
+        /* Botão de impressão — oculto na impressão */
+        .btn-print { display: block; width: 140px; margin: 16px auto; padding: 8px 16px; background: #0d6efd; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        @media print {
+            .btn-print { display: none; }
+            body { font-size: 11px; }
+            .container { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h2>RELATÓRIO DE VIAGEM</h2>
+        <p>Emitido em {{ agora.strftime('%d/%m/%Y às %H:%M') }}</p>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+
+    <!-- Identificação -->
+    <div class="section-title">Identificação</div>
+    <div class="row">
+        <div class="field" style="max-width: 90px;">
+            <label>Cód.</label>
+            <div class="value">{{ obj.id }}</div>
+        </div>
+        <div class="field" style="max-width: 160px;">
+            <label>Tipo de Viagem</label>
+            <div class="value">{{ obj.tipo_viagem.nome if obj.tipo_viagem else '-' }}</div>
+        </div>
+        <div class="field" style="max-width: 140px;">
+            <label>Status</label>
+            <div class="value status">
+                {% if obj.status.value == 'EM_ABERTO' %}Em Aberto
+                {% elif obj.status.value == 'INICIADA' %}Iniciada
+                {% elif obj.status.value == 'FINALIZADA' %}Finalizada
+                {% else %}{{ obj.status.value }}{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Veículo e Motorista -->
+    <div class="section-title">Veículo e Motorista</div>
+    <div class="row">
+        <div class="field">
+            <label>Veículo (Placa)</label>
+            <div class="value">{{ obj.veiculo.placa if obj.veiculo else '-' }}</div>
+        </div>
+        <div class="field">
+            <label>Motorista</label>
+            <div class="value">{{ obj.motorista.nome if obj.motorista else '-' }}</div>
+        </div>
+    </div>
+
+    <!-- Rota e Datas -->
+    <div class="section-title">Rota</div>
+    <div class="row">
+        <div class="field">
+            <label>Local de Origem</label>
+            <div class="value">{{ obj.local_origem or '-' }}</div>
+        </div>
+        <div class="field">
+            <label>Destino</label>
+            <div class="value">{{ obj.destino }}</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="field">
+            <label>Data / Hora Inicial</label>
+            <div class="value">{{ obj.data_inicial.strftime('%d/%m/%Y %H:%M') if obj.data_inicial else '-' }}</div>
+        </div>
+        <div class="field">
+            <label>Data / Hora Final</label>
+            <div class="value">{{ obj.data_final.strftime('%d/%m/%Y %H:%M') if obj.data_final else '-' }}</div>
+        </div>
+        <div class="field" style="max-width: 130px;">
+            <label>KM Inicial</label>
+            <div class="value">{{ obj.km_inicial if obj.km_inicial is not none else '-' }}</div>
+        </div>
+        <div class="field" style="max-width: 130px;">
+            <label>KM Final</label>
+            <div class="value">{{ obj.km_final if obj.km_final else '-' }}</div>
+        </div>
+        {% if obj.km_final and obj.km_inicial %}
+        <div class="field" style="max-width: 130px;">
+            <label>KM Percorrido</label>
+            <div class="value">{{ (obj.km_final - obj.km_inicial) | round(2) }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Descrição -->
+    {% if obj.descricao %}
+    <div class="section-title">Descrição</div>
+    <div style="border: 1px solid #ccc; padding: 6px 8px; min-height: 30px; font-size: 12px; white-space: pre-wrap;">{{ obj.descricao }}</div>
+    {% endif %}
+
+    <!-- Pacientes -->
+    <div class="section-title">Pacientes ({{ pacientes | length }})</div>
+    {% if pacientes %}
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>CPF</th>
+                <th>Nome</th>
+                <th>Nome da Mãe</th>
+                <th>Data de Nasc.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pacientes %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    {% if p.cpf and p.cpf|length == 11 %}
+                        {{ p.cpf[:3] }}.{{ p.cpf[3:6] }}.{{ p.cpf[6:9] }}-{{ p.cpf[9:] }}
+                    {% else %}
+                        {{ p.cpf or '-' }}
+                    {% endif %}
+                </td>
+                <td>{{ p.nome }}</td>
+                <td>{{ p.nome_mae or '-' }}</td>
+                <td>{{ p.data_nascimento.strftime('%d/%m/%Y') if p.data_nascimento else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="padding:6px 0; font-style: italic; color: #666;">Nenhum paciente cadastrado.</p>
+    {% endif %}
+
+    <!-- Assinaturas -->
+    <div class="assinaturas">
+        <div class="assinatura">
+            <div class="linha"></div>
+            <p>Motorista</p>
+        </div>
+        <div class="assinatura">
+            <div class="linha"></div>
+            <p>Responsável pela Viagem</p>
+        </div>
+        <div class="assinatura">
+            <div class="linha"></div>
+            <p>Aprovação</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        Relatório gerado em {{ agora.strftime('%d/%m/%Y às %H:%M') }}
+    </div>
+
+</div>
+</body>
+</html>

@@ -36,12 +36,21 @@
                     {% endfor %}
                 </div>
             </div>
-            <div class="mb-3">
-                {{ form.destino.label(class='form-label') }}
-                {{ form.destino(class='form-control' + (' is-invalid' if form.destino.errors else '')) }}
-                {% for erro in form.destino.errors %}
-                <div class="invalid-feedback">{{ erro }}</div>
-                {% endfor %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.local_origem.label(class='form-label') }}
+                    {{ form.local_origem(class='form-control' + (' is-invalid' if form.local_origem.errors else '')) }}
+                    {% for erro in form.local_origem.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.destino.label(class='form-label') }}
+                    {{ form.destino(class='form-control' + (' is-invalid' if form.destino.errors else '')) }}
+                    {% for erro in form.destino.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                </div>
             </div>
             <div class="mb-3">
                 {{ form.descricao.label(class='form-label') }}

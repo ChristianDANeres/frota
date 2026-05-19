@@ -29,6 +29,8 @@ def _aplicar_patches_banco():
         "ALTER TABLE usuario ADD COLUMN IF NOT EXISTS cpf VARCHAR(20)",
         # 0007 — coluna tipo_combustivel em abastecimento
         "ALTER TABLE abastecimento ADD COLUMN IF NOT EXISTS tipo_combustivel VARCHAR(40)",
+        # local_origem em viagem
+        "ALTER TABLE viagem ADD COLUMN IF NOT EXISTS local_origem VARCHAR(255)",
         # 0005 — constraint unique de cpf em usuario
         """DO $$ BEGIN
              IF NOT EXISTS (
@@ -89,6 +91,8 @@ def seed_basico():
         ('status_veiculo', 'Status Veículo',  'status_veiculo.listar',   'bi-check-circle',  24),
         ('oficina',         'Oficinas',        'oficina.listar',          'bi-wrench',        25),
         ('veiculo_oficina', 'Veículos Oficina', 'veiculo_oficina.listar',  'bi-tools',         26),
+        ('intercorrencia',  'Intercorrências',  'intercorrencia.listar',   'bi-exclamation-triangle', 27),
+        ('diario',           'Diário de Bordo',  'diario.listar',           'bi-journal-text',          28),
     ]
     menus_criados = []
     for codigo, nome, endpoint, icone, ordem in menus_base:
@@ -141,6 +145,8 @@ def create_app():
     from app.routes.adm_routes import adm_bp
     from app.routes.oficina_routes import oficina_bp
     from app.routes.veiculo_oficina_routes import veiculo_oficina_bp
+    from app.routes.intercorrencia_routes import intercorrencia_bp
+    from app.routes.diario_routes import diario_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(cliente_bp)
@@ -156,6 +162,8 @@ def create_app():
     app.register_blueprint(adm_bp)
     app.register_blueprint(oficina_bp)
     app.register_blueprint(veiculo_oficina_bp)
+    app.register_blueprint(intercorrencia_bp)
+    app.register_blueprint(diario_bp)
 
     @app.route('/')
     @login_required

@@ -18,6 +18,7 @@ class Viagem(TenantMixin, TimestampMixin, db.Model):
     motorista_id = db.Column(db.Integer, db.ForeignKey('motorista.id'), nullable=False)
     km_inicial = db.Column(db.Numeric(10, 2), nullable=False)
     km_final = db.Column(db.Numeric(10, 2))
+    local_origem = db.Column(db.String(255))
     destino = db.Column(db.String(255), nullable=False)
     descricao = db.Column(db.Text)
     status = db.Column(db.Enum(StatusViagem), nullable=False, default=StatusViagem.EM_ABERTO)

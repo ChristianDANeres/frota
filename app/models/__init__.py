@@ -12,6 +12,8 @@ from app.models.motorista import Motorista, MotoristaAnexo
 from app.models.viagem import Viagem, ViagemPaciente
 from app.models.abastecimento import Abastecimento, AbastecimentoAnexo
 from app.models.oficina import Oficina, VeiculoOficina, VeiculoOficinaAnexo
+from app.models.intercorrencia import Intercorrencia, StatusIntercorrencia, DestinoUsuario
+from app.models.diario import Diario, DiarioAnexo
 
 __all__ = [
     'Cliente', 'Perfil', 'Menu', 'Usuario', 'UsuarioCliente', 'UsuarioPerfil', 'PerfilMenu',
@@ -20,4 +22,6 @@ __all__ = [
     'Viagem', 'ViagemPaciente',
     'Abastecimento', 'AbastecimentoAnexo',
     'Oficina', 'VeiculoOficina', 'VeiculoOficinaAnexo',
+    'Intercorrencia', 'StatusIntercorrencia', 'DestinoUsuario',
+    'Diario', 'DiarioAnexo',
 ]

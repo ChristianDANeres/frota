@@ -10,6 +10,7 @@ class ViagemForm(FlaskForm):
     veiculo_id = SelectField('Veículo', coerce=int, validators=[DataRequired()])
     motorista_id = SelectField('Motorista', coerce=int, validators=[DataRequired()])
     tipo_viagem_id = SelectField('Tipo de Viagem', coerce=int, validators=[Optional()])
+    local_origem = StringField('Local de Origem', validators=[Optional(), Length(max=255)])
     destino = StringField('Destino', validators=[DataRequired()])
     descricao = TextAreaField('Descrição', validators=[Optional()])
     km_inicial = DecimalField('KM Inicial', places=2, validators=[DataRequired(), NumberRange(min=0)])

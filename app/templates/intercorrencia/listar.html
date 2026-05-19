@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Intercorrências Durante Transporte{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Intercorrências Durante Transporte</h4>
+    <a href="{{ url_for('intercorrencia.novo') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nova Intercorrência
+    </a>
+</div>
+
+{# Filtros #}
+<form method="GET" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ q }}" class="form-control"
+               placeholder="Buscar por nome do paciente...">
+    </div>
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">Todos os status</option>
+            <option value="EM_ABERTO"  {% if status_filtro == 'EM_ABERTO' %}selected{% endif %}>Em Aberto</option>
+            <option value="EM_ANALISE" {% if status_filtro == 'EM_ANALISE' %}selected{% endif %}>Em Análise</option>
+            <option value="FINALIZADO" {% if status_filtro == 'FINALIZADO' %}selected{% endif %}>Finalizado</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-secondary w-100">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Paciente</th>
+                    <th>Viagem / Destino</th>
+                    <th>Data Transporte</th>
+                    <th>Horário Ocorrência</th>
+                    <th>Status</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in registros %}
+                <tr>
+                    <td>{{ obj.id }}</td>
+                    <td>{{ obj.paciente_nome }}</td>
+                    <td>{{ obj.viagem.destino if obj.viagem else '-' }}</td>
+                    <td>{{ obj.data_transporte.strftime('%d/%m/%Y') if obj.data_transporte else '-' }}</td>
+                    <td>{{ obj.horario_ocorrencia.strftime('%H:%M') if obj.horario_ocorrencia else '-' }}</td>
+                    <td>
+                        {% if obj.status == StatusIntercorrencia.EM_ABERTO %}
+                            <span class="badge bg-secondary">Em Aberto</span>
+                        {% elif obj.status == StatusIntercorrencia.EM_ANALISE %}
+                            <span class="badge bg-warning text-dark">Em Análise</span>
+                        {% else %}
+                            <span class="badge bg-success">Finalizado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('intercorrencia.imprimir', id=obj.id) }}"
+                           class="btn btn-sm btn-outline-secondary" title="Imprimir" target="_blank">
+                            <i class="bi bi-printer"></i>
+                        </a>
+                        <a href="{{ url_for('intercorrencia.visualizar', id=obj.id) }}"
+                           class="btn btn-sm btn-outline-info" title="Visualizar">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        {% if obj.status != StatusIntercorrencia.FINALIZADO %}
+                        <a href="{{ url_for('intercorrencia.editar', id=obj.id) }}"
+                           class="btn btn-sm btn-outline-primary" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{{ url_for('intercorrencia.excluir', id=obj.id) }}"
+                              method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir"
+                                    onclick="return confirm('Deseja excluir esta intercorrência?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-3">
+                        Nenhuma intercorrência registrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

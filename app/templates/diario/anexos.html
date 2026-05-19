@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Anexos — Diário {{ obj.codigo }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+        <i class="bi bi-paperclip"></i>
+        Anexos — Diário <span class="badge bg-secondary">{{ obj.codigo }}</span>
+    </h4>
+    <a href="{{ url_for('diario.visualizar', id=obj.id) }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+{# Tabela de anexos existentes #}
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        Arquivos Anexados
+        <span class="badge bg-secondary ms-1">{{ obj.anexos | length }}</span>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Tipo</th>
+                    <th>Nome do Arquivo</th>
+                    <th>Tamanho</th>
+                    <th>Enviado em</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in obj.anexos %}
+                <tr>
+                    <td>{{ a.tipo_arquivo.nome if a.tipo_arquivo else '-' }}</td>
+                    <td>{{ a.nome_arquivo }}</td>
+                    <td>{{ '%d KB' % (a.tamanho_arquivo // 1024) if a.tamanho_arquivo else '-' }}</td>
+                    <td>{{ a.criado_em.strftime('%d/%m/%Y %H:%M') if a.criado_em else '-' }}</td>
+                    <td class="text-end">
+                        <form action="{{ url_for('diario.excluir_anexo', id=obj.id, anexo_id=a.id) }}"
+                              method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir"
+                                    onclick="return confirm('Deseja remover este anexo?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">
+                        Nenhum anexo enviado ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Formulário de upload #}
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-upload"></i> Adicionar Anexo
+        <small class="text-muted ms-2">(máx. 3 MB · PDF, imagens, DOC, XLS)</small>
+    </div>
+    <div class="card-body">
+        <form method="POST"
+              action="{{ url_for('diario.upload_anexo', id=obj.id) }}"
+              enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="row align-items-end">
+                <div class="col-md-3 mb-3">
+                    {{ form.tipo_arquivo_id.label(class='form-label') }}
+                    {{ form.tipo_arquivo_id(class='form-select') }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.arquivo.label(class='form-label') }}
+                    {{ form.arquivo(class='form-control' + (' is-invalid' if form.arquivo.errors else '')) }}
+                    {% for erro in form.arquivo.errors %}
+                    <div class="invalid-feedback">{{ erro }}</div>
+                    {% endfor %}
+                    <div class="form-text" id="tamanho-info"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.submit(class='btn btn-primary w-100') }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const inp  = document.querySelector('input[type="file"]');
+    const info = document.getElementById('tamanho-info');
+    if (!inp) return;
+    inp.addEventListener('change', function () {
+        if (this.files.length === 0) { info.textContent = ''; return; }
+        const kb = this.files[0].size / 1024;
+        const mb = kb / 1024;
+        if (mb > 3) {
+            info.textContent = `⚠ Tamanho: ${mb.toFixed(2)} MB — excede o limite de 3 MB.`;
+            info.className = 'form-text text-danger';
+        } else {
+            info.textContent = `Tamanho: ${kb < 1024 ? kb.toFixed(0) + ' KB' : mb.toFixed(2) + ' MB'}`;
+            info.className = 'form-text text-success';
+        }
+    });
+}());
+</script>
+{% endblock %}

@@ -6,6 +6,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Detalhes da Viagem</h4>
     <div class="d-flex gap-2">
+        <a href="{{ url_for('viagem.imprimir', id=obj.id) }}" class="btn btn-outline-secondary" target="_blank">
+            <i class="bi bi-printer"></i> Imprimir
+        </a>
         <a href="{{ url_for('viagem.pacientes', id=obj.id) }}" class="btn btn-outline-secondary">
             <i class="bi bi-people"></i> Ver Pacientes
         </a>
@@ -22,6 +25,9 @@
         <dl class="row">
             <dt class="col-sm-3">Destino</dt>
             <dd class="col-sm-9">{{ obj.destino }}</dd>
+
+            <dt class="col-sm-3">Local de Origem</dt>
+            <dd class="col-sm-9">{{ obj.local_origem or '-' }}</dd>
 
             <dt class="col-sm-3">Veículo</dt>
             <dd class="col-sm-9">{{ obj.veiculo.placa if obj.veiculo else '-' }}</dd>

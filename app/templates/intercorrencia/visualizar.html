@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Intercorrência #{{ obj.id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Intercorrência #{{ obj.id }}</h4>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('intercorrencia.imprimir', id=obj.id) }}"
+           class="btn btn-outline-secondary" target="_blank">
+            <i class="bi bi-printer"></i> Imprimir
+        </a>
+        {% if obj.status != StatusIntercorrencia.FINALIZADO %}
+        <a href="{{ url_for('intercorrencia.editar', id=obj.id) }}"
+           class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        {% endif %}
+        <a href="{{ url_for('intercorrencia.listar') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+{# Status badge #}
+<div class="mb-3">
+    {% if obj.status == StatusIntercorrencia.EM_ABERTO %}
+        <span class="badge bg-secondary fs-6">Em Aberto</span>
+    {% elif obj.status == StatusIntercorrencia.EM_ANALISE %}
+        <span class="badge bg-warning text-dark fs-6">Em Análise</span>
+    {% else %}
+        <span class="badge bg-success fs-6">Finalizado</span>
+    {% endif %}
+</div>
+
+<div class="row">
+    {# Coluna esquerda #}
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold bg-dark text-white">
+                <i class="bi bi-map"></i> Viagem
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Destino da Viagem</dt>
+                    <dd class="col-sm-7">{{ obj.viagem.destino if obj.viagem else '-' }}</dd>
+                    <dt class="col-sm-5">Motorista</dt>
+                    <dd class="col-sm-7">{{ obj.viagem.motorista.nome if obj.viagem and obj.viagem.motorista else '-' }}</dd>
+                    <dt class="col-sm-5">Local de Origem</dt>
+                    <dd class="col-sm-7">{{ obj.local_origem or '-' }}</dd>
+                    <dt class="col-sm-5">Local de Destino</dt>
+                    <dd class="col-sm-7">{{ obj.local_destino or '-' }}</dd>
+                    <dt class="col-sm-5">Data do Transporte</dt>
+                    <dd class="col-sm-7">{{ obj.data_transporte.strftime('%d/%m/%Y') if obj.data_transporte else '-' }}</dd>
+                    <dt class="col-sm-5">Horário da Ocorrência</dt>
+                    <dd class="col-sm-7">{{ obj.horario_ocorrencia.strftime('%H:%M') if obj.horario_ocorrencia else '-' }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold bg-dark text-white">
+                <i class="bi bi-person"></i> Paciente
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Nome</dt>
+                    <dd class="col-sm-7">{{ obj.paciente_nome }}</dd>
+                    <dt class="col-sm-5">Idade</dt>
+                    <dd class="col-sm-7">{{ obj.paciente_idade if obj.paciente_idade is not none else '-' }}</dd>
+                    <dt class="col-sm-5">Telefone</dt>
+                    <dd class="col-sm-7">{{ obj.paciente_telefone or '-' }}</dd>
+                    <dt class="col-sm-5">Acompanhante</dt>
+                    <dd class="col-sm-7">{{ obj.paciente_acompanhante or '-' }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    {# Coluna direita #}
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold bg-dark text-white">
+                <i class="bi bi-clipboard-pulse"></i> Condição Física
+            </div>
+            <div class="card-body">
+                {% set condicoes = [
+                    ('Deambula',                              obj.cond_deambula),
+                    ('Não Deambula',                          obj.cond_nao_deambula),
+                    ('Acamado',                               obj.cond_acamado),
+                    ('Cadeirante',                            obj.cond_cadeirante),
+                    ('Uso de Dispositivos de Mobilidade',     obj.cond_dispositivo_mobil),
+                    ('Traqueostomizado',                      obj.cond_traqueostomizado),
+                    ('Uso de Oxigênio Contínuo',             obj.cond_oxigenio_continuo),
+                    ('Portador de Ostomias',                  obj.cond_portador_ostomias),
+                    ('Em uso de drenos/dispositivos externos',obj.cond_drenos_dispositivos),
+                    ('Com acesso venoso periférico',          obj.cond_acesso_venoso_periferico),
+                    ('Com acesso venoso central/catéter duplo-lúmen', obj.cond_acesso_venoso_central),
+                ] %}
+                <ul class="list-unstyled mb-0">
+                    {% for label, val in condicoes %}
+                    <li class="{% if val %}text-dark fw-semibold{% else %}text-muted{% endif %}">
+                        <i class="bi {% if val %}bi-check-square-fill text-success{% else %}bi-square{% endif %}"></i>
+                        {{ label }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-header fw-semibold bg-dark text-white">
+        <i class="bi bi-exclamation-triangle"></i> Ocorrência
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Descrição</dt>
+            <dd class="col-sm-9" style="white-space: pre-wrap;">{{ obj.descricao_ocorrencia or '-' }}</dd>
+            <dt class="col-sm-3">Endereço</dt>
+            <dd class="col-sm-9">{{ obj.endereco_ocorrencia or '-' }}</dd>
+            <dt class="col-sm-3">Socorrista(s)</dt>
+            <dd class="col-sm-9">{{ obj.socorristas or '-' }}</dd>
+            <dt class="col-sm-3">Destino do Usuário</dt>
+            <dd class="col-sm-9">
+                {% if obj.destino_usuario %}
+                    {% if obj.destino_usuario.name == 'DOMICILIO' %}Domicílio
+                    {% elif obj.destino_usuario.name == 'UPA' %}UPA
+                    {% else %}Hospital{% endif %}
+                {% else %}-{% endif %}
+            </dd>
+            <dt class="col-sm-3">Data do Atendimento</dt>
+            <dd class="col-sm-9">{{ obj.data_atendimento.strftime('%d/%m/%Y') if obj.data_atendimento else '-' }}</dd>
+            <dt class="col-sm-3">Local do Atendimento</dt>
+            <dd class="col-sm-9">{{ obj.local_atendimento or '-' }}</dd>
+            <dt class="col-sm-3">Observações</dt>
+            <dd class="col-sm-9" style="white-space: pre-wrap;">{{ obj.observacoes or '-' }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

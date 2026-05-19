@@ -46,6 +46,7 @@ def novo():
             veiculo_id=form.veiculo_id.data,
             motorista_id=form.motorista_id.data,
             tipo_viagem_id=form.tipo_viagem_id.data or None,
+            local_origem=form.local_origem.data,
             destino=form.destino.data,
             descricao=form.descricao.data,
             km_inicial=form.km_inicial.data,
@@ -80,6 +81,7 @@ def editar(id):
         obj.veiculo_id = form.veiculo_id.data
         obj.motorista_id = form.motorista_id.data
         obj.tipo_viagem_id = form.tipo_viagem_id.data or None
+        obj.local_origem = form.local_origem.data
         obj.destino = form.destino.data
         obj.descricao = form.descricao.data
         obj.km_inicial = form.km_inicial.data
@@ -92,6 +94,7 @@ def editar(id):
     form.veiculo_id.data = obj.veiculo_id
     form.motorista_id.data = obj.motorista_id
     form.tipo_viagem_id.data = obj.tipo_viagem_id or 0
+    form.local_origem.data = obj.local_origem
     form.destino.data = obj.destino
     form.descricao.data = obj.descricao
     form.km_inicial.data = obj.km_inicial
@@ -190,3 +193,16 @@ def excluir_paciente(id, pac_id):
     db.session.commit()
     flash('Paciente removido.', 'warning')
     return redirect(url_for('viagem.pacientes', id=id))
+
+
+@viagem_bp.route('/<int:id>/imprimir')
+@login_required
+@cliente_required
+def imprimir(id):
+    obj = Viagem.query.filter_by(id=id, cliente_id=session['cliente_id']).first_or_404()
+    pacientes = (ViagemPaciente.query
+                 .filter_by(viagem_id=obj.id, cliente_id=session['cliente_id'])
+                 .order_by(ViagemPaciente.nome)
+                 .all())
+    return render_template('viagem/imprimir.html', obj=obj, pacientes=pacientes,
+                           agora=datetime.now())
