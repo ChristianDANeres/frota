@@ -1,6 +1,6 @@
 import os
 from datetime import date, timedelta
-from flask import Flask, render_template, session, redirect, url_for
+from flask import Flask, render_template, session, url_for
 from flask_login import login_required, current_user
 from config import Config
 from app.extensions import db, migrate, login_manager, csrf
@@ -206,9 +206,15 @@ def create_app():
 
     @app.route('/')
     @login_required
+    @cliente_required
     def dashboard():
-        # A página principal padrão deve ser as Análises (dashbird)
-        return redirect(url_for('dashbird'))
+        cliente_id = session.get('cliente_id')
+        menus = (Menu.query
+                 .filter_by(cliente_id=cliente_id, ativo=True)
+                 .order_by(Menu.ordem, Menu.nome)
+                 .all())
+        menus_permitidos = [m for m in menus if current_user.tem_permissao_menu(m.codigo)]
+        return render_template('dashboard.html', menus=menus_permitidos)
 
     @app.route('/dashbird')
     @login_required
