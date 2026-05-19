@@ -57,6 +57,45 @@ def _aplicar_patches_banco():
         conn.commit()
 
 
+def _seed_menus_todos_clientes():
+    """Garante que todos os clientes possuem todos os menus canônicos.
+
+    Roda a cada startup de forma idempotente — só insere o que faltar.
+    Não vincula a perfis; essa associação é feita pelo administrador via UI.
+    """
+    menus_canonicos = [
+        ('dashboard',       'Acesso Rápido',      'dashboard',                'bi-grid-3x3-gap',           1),
+        ('veiculo',         'Veículos',            'veiculo.listar',           'bi-car-front',             10),
+        ('motorista',       'Motoristas',          'motorista.listar',         'bi-person-badge',          11),
+        ('viagem',          'Viagens',             'viagem.listar',            'bi-map',                   12),
+        ('abastecimento',   'Abastecimentos',      'abastecimento.listar',     'bi-fuel-pump',             13),
+        ('montadora',       'Montadoras',          'montadora.listar',         'bi-building-gear',         20),
+        ('cor',             'Cores',               'cor.listar',               'bi-palette',               21),
+        ('tipo_arquivo',    'Tipos de Arquivo',    'tipo_arquivo.listar',      'bi-file-earmark',          22),
+        ('tipo_viagem',     'Tipos de Viagem',     'tipo_viagem.listar',       'bi-signpost-2',            23),
+        ('status_veiculo',  'Status Veículo',      'status_veiculo.listar',    'bi-check-circle',          24),
+        ('oficina',         'Oficinas',            'oficina.listar',           'bi-wrench',                25),
+        ('veiculo_oficina', 'Veículos Oficina',    'veiculo_oficina.listar',   'bi-tools',                 26),
+        ('intercorrencia',  'Intercorrências',     'intercorrencia.listar',    'bi-exclamation-triangle',  27),
+        ('diario',          'Diário de Bordo',     'diario.listar',            'bi-journal-text',          28),
+    ]
+
+    clientes = Cliente.query.all()
+    for cliente in clientes:
+        for codigo, nome, endpoint, icone, ordem in menus_canonicos:
+            existe = Menu.query.filter_by(cliente_id=cliente.id, codigo=codigo).first()
+            if not existe:
+                db.session.add(Menu(
+                    cliente_id=cliente.id,
+                    codigo=codigo,
+                    nome=nome,
+                    endpoint=endpoint,
+                    icone=icone,
+                    ordem=ordem,
+                ))
+    db.session.commit()
+
+
 def seed_basico():
     admin_user = os.getenv('ADMIN_USER', 'admin')
     admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
@@ -326,6 +365,7 @@ def create_app():
         db.create_all()
         seed_basico()
         _aplicar_patches_banco()
+        _seed_menus_todos_clientes()
 
     # filtros de template
     from app.utils import format_cpf
