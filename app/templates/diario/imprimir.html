@@ -267,8 +267,9 @@
         {% for a in imagens %}
         {% if a.url_relativa %}
         <figure>
-            <img src="{{ url_for('static', filename=a.url_relativa) }}"
-                 alt="{{ a.nome_arquivo }}">
+            <img src="{{ url_for('static', filename=a.url_relativa, _external=True) }}"
+                 alt="{{ a.nome_arquivo }}"
+                 onerror="this.style.border='1px dashed #aaa';this.style.padding='4px';">
             <figcaption>
                 {% if a.tipo_arquivo %}{{ a.tipo_arquivo.nome }}<br>{% endif %}
                 {{ a.nome_arquivo }}

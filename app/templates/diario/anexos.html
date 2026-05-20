@@ -38,6 +38,20 @@
                     <td>{{ '%d KB' % (a.tamanho_arquivo // 1024) if a.tamanho_arquivo else '-' }}</td>
                     <td>{{ a.criado_em.strftime('%d/%m/%Y %H:%M') if a.criado_em else '-' }}</td>
                     <td class="text-end">
+                        {% if a.eh_imagem and a.url_relativa %}
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary me-1"
+                                title="Visualizar imagem"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalImagem"
+                                onclick="preencherModalImagem(
+                                    '{{ url_for('static', filename=a.url_relativa) }}',
+                                    '{{ a.nome_arquivo }}',
+                                    '{{ a.tipo_arquivo.nome if a.tipo_arquivo else '' }}'
+                                )">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        {% endif %}
                         <form action="{{ url_for('diario.excluir_anexo', id=obj.id, anexo_id=a.id) }}"
                               method="POST" class="d-inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -91,11 +105,46 @@
         </form>
     </div>
 </div>
+{# Modal de visualização de imagem #}
+<div class="modal fade" id="modalImagem" tabindex="-1" aria-labelledby="modalImagemLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalImagemLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImagemSrc" src="" alt="" class="img-fluid rounded">
+            </div>
+            <div class="modal-footer">
+                <a id="modalImagemLink" href="" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-box-arrow-up-right"></i> Abrir em nova aba
+                </a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+function preencherModalImagem(src, nome, tipo) {
+    document.getElementById('modalImagemLabel').textContent = tipo ? tipo + ' \u2014 ' + nome : nome;
+    document.getElementById('modalImagemSrc').src = src;
+    document.getElementById('modalImagemSrc').alt = nome;
+    document.getElementById('modalImagemLink').href = src;
+}
+
 (function () {
+    var modalEl = document.getElementById('modalImagem');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('modalImagemSrc').src = '';
+        });
+    }
+
+    // Exibe tamanho do arquivo selecionado
     const inp  = document.querySelector('input[type="file"]');
     const info = document.getElementById('tamanho-info');
     if (!inp) return;
