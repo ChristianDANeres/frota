@@ -77,7 +77,7 @@ def _seed_menus_todos_clientes():
         ('oficina',         'Oficinas',            'oficina.listar',           'bi-wrench',                25),
         ('veiculo_oficina', 'Veículos Oficina',    'veiculo_oficina.listar',   'bi-tools',                 26),
         ('intercorrencia',  'Intercorrências',     'intercorrencia.listar',    'bi-exclamation-triangle',  27),
-        ('diario',          'Diário de Bordo',     'diario.listar',            'bi-journal-text',          28),
+        ('diario',          'Diário',              'diario.listar',            'bi-journal-text',          28),
     ]
 
     clientes = Cliente.query.all()
@@ -131,7 +131,7 @@ def seed_basico():
         ('oficina',         'Oficinas',        'oficina.listar',          'bi-wrench',        25),
         ('veiculo_oficina', 'Veículos Oficina', 'veiculo_oficina.listar',  'bi-tools',         26),
         ('intercorrencia',  'Intercorrências',  'intercorrencia.listar',   'bi-exclamation-triangle', 27),
-        ('diario',           'Diário de Bordo',  'diario.listar',           'bi-journal-text',          28),
+        ('diario',           'Diário',           'diario.listar',           'bi-journal-text',          28),
     ]
     menus_criados = []
     for codigo, nome, endpoint, icone, ordem in menus_base:

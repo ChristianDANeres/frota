@@ -165,7 +165,7 @@
                     {% if cliente.telefone %}&nbsp;|&nbsp;{{ cliente.telefone }}{% endif %}
                 </div>
             {% endif %}
-            <h1><i>Diário de Bordo</i></h1>
+            <h1><i>Diário</i></h1>
             <div class="sub">
                 Código: <strong>{{ obj.codigo }}</strong>
                 &nbsp;|&nbsp;
@@ -288,7 +288,7 @@
     </div>
 
     <div class="rodape">
-        Diário de Bordo · {{ obj.codigo }} · {{ agora.strftime('%d/%m/%Y %H:%M') }}
+        Diário · {{ obj.codigo }} · {{ agora.strftime('%d/%m/%Y %H:%M') }}
     </div>
 
     <button class="btn-imprimir" onclick="window.print()">
