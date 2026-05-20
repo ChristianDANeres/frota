@@ -8,13 +8,54 @@
         body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; background: #fff; }
         .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 15mm; }
 
+        /* ── Cabeçalho com logos ── */
         .cabecalho {
             border-bottom: 3px solid #1a1a2e;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
             margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .cabecalho h1 { font-size: 16pt; color: #1a1a2e; }
-        .cabecalho .sub { font-size: 10pt; color: #555; margin-top: 2px; }
+        .cabecalho-logo {
+            flex: 0 0 80px;
+            width: 80px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cabecalho-logo img {
+            max-width: 80px;
+            max-height: 60px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+        .cabecalho-logo-vazio {
+            width: 80px;
+            height: 60px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+        }
+        .cabecalho-centro {
+            flex: 1;
+            text-align: center;
+        }
+        .cabecalho-centro .nome-cliente {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        .cabecalho-centro .info-cliente {
+            font-size: 8.5pt;
+            color: #555;
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+        .cabecalho-centro h1 { font-size: 11pt; color: #1a1a2e; margin-top: 4px; }
+        .cabecalho-centro .sub { font-size: 9pt; color: #777; margin-top: 2px; }
 
         .grade { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
         .grade td { border: 1px solid #ccc; padding: 5px 8px; vertical-align: top; }
@@ -104,11 +145,42 @@
 
     {# ── Cabeçalho ── #}
     <div class="cabecalho">
-        <h1><i>Diário de Bordo</i></h1>
-        <div class="sub">
-            Código: <strong>{{ obj.codigo }}</strong>
-            &nbsp;|&nbsp;
-            Emitido em: {{ agora.strftime('%d/%m/%Y às %H:%M') }}
+        {# Logo esquerdo #}
+        <div class="cabecalho-logo">
+            {% if cliente and cliente.logo_esquerdo %}
+                <img src="{{ url_for('static', filename=cliente.logo_esquerdo) }}"
+                     alt="Logo esquerdo">
+            {% else %}
+                <div class="cabecalho-logo-vazio"></div>
+            {% endif %}
+        </div>
+
+        {# Dados do cliente — centralizado #}
+        <div class="cabecalho-centro">
+            {% if cliente %}
+                <div class="nome-cliente">{{ cliente.nome }}</div>
+                <div class="info-cliente">
+                    {% if cliente.cnpj %}CNPJ: {{ cliente.cnpj }}{% endif %}
+                    {% if cliente.municipio %}&nbsp;|&nbsp;{{ cliente.municipio }}{% endif %}
+                    {% if cliente.telefone %}&nbsp;|&nbsp;{{ cliente.telefone }}{% endif %}
+                </div>
+            {% endif %}
+            <h1><i>Diário de Bordo</i></h1>
+            <div class="sub">
+                Código: <strong>{{ obj.codigo }}</strong>
+                &nbsp;|&nbsp;
+                Emitido em: {{ agora.strftime('%d/%m/%Y às %H:%M') }}
+            </div>
+        </div>
+
+        {# Logo direito #}
+        <div class="cabecalho-logo">
+            {% if cliente and cliente.logo_direito %}
+                <img src="{{ url_for('static', filename=cliente.logo_direito) }}"
+                     alt="Logo direito">
+            {% else %}
+                <div class="cabecalho-logo-vazio"></div>
+            {% endif %}
         </div>
     </div>
 

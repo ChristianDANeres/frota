@@ -6,7 +6,7 @@ from flask import (Blueprint, render_template, redirect, url_for,
 from flask_login import login_required
 from werkzeug.utils import secure_filename
 from app.extensions import db
-from app.models import Diario, DiarioAnexo, Veiculo, Motorista, TipoArquivo
+from app.models import Diario, DiarioAnexo, Veiculo, Motorista, TipoArquivo, Cliente
 from app.forms.diario_form import DiarioForm, DiarioAnexoForm
 from app.common.decorators import cliente_required, menu_required
 
@@ -248,4 +248,5 @@ def excluir_anexo(id, anexo_id):
 @cliente_required
 def imprimir(id):
     obj = Diario.query.filter_by(id=id, cliente_id=session['cliente_id']).first_or_404()
-    return render_template('diario/imprimir.html', obj=obj, agora=datetime.now())
+    cliente = Cliente.query.get(session['cliente_id'])
+    return render_template('diario/imprimir.html', obj=obj, agora=datetime.now(), cliente=cliente)
