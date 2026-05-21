@@ -5,9 +5,14 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Abastecimentos</h4>
-    <a href="{{ url_for('abastecimento.novo') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Novo Abastecimento
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('abastecimento.relatorio') }}" class="btn btn-outline-info btn-sm">
+            <i class="bi bi-bar-chart-line"></i> Relatório
+        </a>
+        <a href="{{ url_for('abastecimento.novo') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Novo Abastecimento
+        </a>
+    </div>
 </div>
 <div class="card shadow-sm">
     <div class="card-body p-0">

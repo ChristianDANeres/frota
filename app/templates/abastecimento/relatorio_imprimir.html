@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>Relatório de Abastecimentos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; background: #fff; }
+        .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 12mm 15mm; }
+
+        /* ── Cabeçalho com logos ── */
+        .cabecalho {
+            border-bottom: 3px solid #1a1a2e;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cabecalho-logo {
+            flex: 0 0 80px;
+            width: 80px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cabecalho-logo img {
+            max-width: 80px;
+            max-height: 60px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+        .cabecalho-logo-vazio {
+            width: 80px;
+            height: 60px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+        }
+        .cabecalho-centro {
+            flex: 1;
+            text-align: center;
+        }
+        .cabecalho-centro .nome-cliente {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        .cabecalho-centro .info-cliente {
+            font-size: 8.5pt;
+            color: #555;
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+        .cabecalho-centro h1 {
+            font-size: 11pt;
+            color: #1a1a2e;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .cabecalho-centro .sub {
+            font-size: 9pt;
+            color: #777;
+            margin-top: 2px;
+        }
+
+        /* ── Cards de totais ── */
+        .totais {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .totais .card {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        .totais .card .label {
+            font-size: 8pt;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .totais .card .valor {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+
+        /* ── Seção título ── */
+        .secao-titulo {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 10pt;
+            margin-bottom: 6px;
+            margin-top: 14px;
+        }
+
+        /* ── Tabelas ── */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 9.5pt; }
+        thead tr { background: #e8e8e8; }
+        th { border: 1px solid #aaa; padding: 4px 6px; font-size: 8.5pt; text-transform: uppercase; text-align: left; }
+        td { border: 1px solid #ccc; padding: 4px 6px; vertical-align: top; }
+        tbody tr:nth-child(even) { background: #f7f7f7; }
+        tfoot tr { background: #1a1a2e; color: #fff; font-weight: bold; }
+        tfoot td { border-color: #1a1a2e; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        /* ── Rankings lado a lado ── */
+        .rankings { display: flex; gap: 16px; margin-bottom: 14px; }
+        .rankings .bloco { flex: 1; }
+
+        /* ── Rodapé ── */
+        .rodape {
+            margin-top: 16px;
+            border-top: 1px solid #ccc;
+            padding-top: 6px;
+            font-size: 8.5pt;
+            color: #888;
+            text-align: right;
+        }
+
+        /* ── Botão de impressão ── */
+        .btn-imprimir {
+            display: block; margin: 12px auto; padding: 8px 28px;
+            background: #0d6efd; color: #fff; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 11pt;
+        }
+        .nav-voltar { margin-bottom: 10px; }
+
+        @media print {
+            .btn-imprimir, .nav-voltar { display: none !important; }
+            body { background: #fff; }
+            .page { padding: 8mm 10mm; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="nav-voltar">
+        <a href="{{ url_for('abastecimento.relatorio',
+                            veiculo_id=veiculo_id or '',
+                            data_inicial=data_inicial.strftime('%Y-%m-%d'),
+                            data_final=data_final.strftime('%Y-%m-%d')) }}"
+           style="text-decoration:none; color:#0d6efd;">
+            &larr; Voltar ao relatório
+        </a>
+    </div>
+
+    {# ── Cabeçalho ── #}
+    <div class="cabecalho">
+        <div class="cabecalho-logo">
+            {% if cliente and cliente.logo_esquerdo %}
+                <img src="{{ url_for('static', filename=cliente.logo_esquerdo) }}" alt="Logo esquerdo">
+            {% else %}
+                <div class="cabecalho-logo-vazio"></div>
+            {% endif %}
+        </div>
+
+        <div class="cabecalho-centro">
+            {% if cliente %}
+                <div class="nome-cliente">{{ cliente.nome }}</div>
+                <div class="info-cliente">
+                    {% if cliente.cnpj %}CNPJ: {{ cliente.cnpj }}{% endif %}
+                    {% if cliente.municipio %}&nbsp;|&nbsp;{{ cliente.municipio }}{% endif %}
+                    {% if cliente.telefone %}&nbsp;|&nbsp;{{ cliente.telefone }}{% endif %}
+                </div>
+            {% endif %}
+            <h1>Relatório de Abastecimentos</h1>
+            <div class="sub">
+                Período: <strong>{{ data_inicial.strftime('%d/%m/%Y') }}</strong>
+                a <strong>{{ data_final.strftime('%d/%m/%Y') }}</strong>
+                &nbsp;|&nbsp;
+                Emitido em: {{ agora.strftime('%d/%m/%Y às %H:%M') }}
+            </div>
+        </div>
+
+        <div class="cabecalho-logo">
+            {% if cliente and cliente.logo_direito %}
+                <img src="{{ url_for('static', filename=cliente.logo_direito) }}" alt="Logo direito">
+            {% else %}
+                <div class="cabecalho-logo-vazio"></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir</button>
+
+    {# ── Totais ── #}
+    <div class="totais">
+        <div class="card">
+            <div class="label">Total de Registros</div>
+            <div class="valor">{{ total_registros }}</div>
+        </div>
+        <div class="card">
+            <div class="label">Total em Litros</div>
+            <div class="valor">{{ "%.3f"|format(total_litros) }} L</div>
+        </div>
+        <div class="card">
+            <div class="label">Total em Valor</div>
+            <div class="valor">{{ total_valor | format_money }}</div>
+        </div>
+    </div>
+
+    {# ── Rankings lado a lado ── #}
+    <div class="rankings">
+
+        <div class="bloco">
+            <div class="secao-titulo" style="margin-top:0;">Ranking por Veículo</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Placa</th>
+                        <th>Modelo</th>
+                        <th class="text-center">Abast.</th>
+                        <th class="text-right">Litros</th>
+                        <th class="text-right">Valor (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in ranking_veiculo %}
+                    <tr>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ row.placa }}</td>
+                        <td>{{ row.modelo or '-' }}</td>
+                        <td class="text-center">{{ row.qtd }}</td>
+                        <td class="text-right">{{ "%.3f"|format(row.total_litros | float) }}</td>
+                        <td class="text-right">{{ row.total_valor | format_money }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center">Nenhum registro.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bloco">
+            <div class="secao-titulo" style="margin-top:0;">Ranking por Combustível</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Combustível</th>
+                        <th class="text-center">Abast.</th>
+                        <th class="text-right">Litros</th>
+                        <th class="text-right">Valor (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in ranking_combustivel %}
+                    <tr>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ row.tipo_combustivel or 'Não informado' }}</td>
+                        <td class="text-center">{{ row.qtd }}</td>
+                        <td class="text-right">{{ "%.3f"|format(row.total_litros | float) }}</td>
+                        <td class="text-right">{{ row.total_valor | format_money }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center">Nenhum registro.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    {# ── Detalhamento ── #}
+    <div class="secao-titulo">Detalhamento — {{ total_registros }} registro(s)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Veículo</th>
+                <th>Motorista</th>
+                <th>Combustível</th>
+                <th class="text-right">KM</th>
+                <th class="text-right">Qtde (L)</th>
+                <th class="text-right">Valor (R$)</th>
+                <th class="text-right">R$/L</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in registros %}
+            {% set preco_litro = (obj.valor | float / obj.quantidade | float) if obj.quantidade | float > 0 else 0 %}
+            <tr>
+                <td>{{ obj.data.strftime('%d/%m/%Y') if obj.data else '-' }}</td>
+                <td>
+                    {{ obj.veiculo.placa if obj.veiculo else '-' }}
+                    {% if obj.veiculo and obj.veiculo.modelo %}<br><small>{{ obj.veiculo.modelo }}</small>{% endif %}
+                </td>
+                <td>{{ obj.motorista.nome if obj.motorista else '-' }}</td>
+                <td>{{ obj.tipo_combustivel or '-' }}</td>
+                <td class="text-right">{{ obj.km }}</td>
+                <td class="text-right">{{ "%.3f"|format(obj.quantidade | float) }}</td>
+                <td class="text-right">{{ obj.valor | format_money }}</td>
+                <td class="text-right">{{ "%.2f"|format(preco_litro) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center">Nenhum abastecimento no período.</td></tr>
+            {% endfor %}
+        </tbody>
+        {% if registros %}
+        <tfoot>
+            <tr>
+                <td colspan="5">Total</td>
+                <td class="text-right">{{ "%.3f"|format(total_litros) }}</td>
+                <td class="text-right">{{ total_valor | format_money }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+
+    <div class="rodape">
+        Relatório gerado em {{ agora.strftime('%d/%m/%Y às %H:%M') }}
+        {% if cliente %} — {{ cliente.nome }}{% endif %}
+    </div>
+
+</div>
+</body>
+</html>

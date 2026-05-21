@@ -1,10 +1,12 @@
 import os
 import uuid
+from datetime import date, datetime
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session, current_app
 from flask_login import login_required
 from werkzeug.utils import secure_filename
+from sqlalchemy import func
 from app.extensions import db
-from app.models import Abastecimento, AbastecimentoAnexo, Veiculo, Motorista, TipoArquivo
+from app.models import Abastecimento, AbastecimentoAnexo, Veiculo, Motorista, TipoArquivo, Cliente
 from app.forms.abastecimento_form import AbastecimentoForm, AbastecimentoAnexoForm
 from app.common.decorators import cliente_required, menu_required
 
@@ -154,3 +156,133 @@ def excluir_anexo(id, anexo_id):
     db.session.commit()
     flash('Anexo removido.', 'warning')
     return redirect(url_for('abastecimento.anexos', id=id))
+
+
+# ---------------------------------------------------------------------------
+# Relatório de abastecimentos
+# ---------------------------------------------------------------------------
+
+def _dados_relatorio(cliente_id):
+    """Lê os parâmetros da query string e devolve um dict com todos os dados
+    necessários para renderizar o relatório (tela ou impressão)."""
+    import calendar
+
+    veiculo_id_str = request.args.get('veiculo_id', '')
+    data_inicial_str = request.args.get('data_inicial', '')
+    data_final_str = request.args.get('data_final', '')
+
+    hoje = date.today()
+    data_inicial_default = hoje.replace(day=1)
+    ultimo_dia = calendar.monthrange(hoje.year, hoje.month)[1]
+    data_final_default = hoje.replace(day=ultimo_dia)
+
+    try:
+        data_inicial = datetime.strptime(data_inicial_str, '%Y-%m-%d').date() if data_inicial_str else data_inicial_default
+    except ValueError:
+        data_inicial = data_inicial_default
+
+    try:
+        data_final = datetime.strptime(data_final_str, '%Y-%m-%d').date() if data_final_str else data_final_default
+    except ValueError:
+        data_final = data_final_default
+
+    try:
+        veiculo_id = int(veiculo_id_str) if veiculo_id_str else None
+    except ValueError:
+        veiculo_id = None
+
+    # query base
+    q = (
+        db.session.query(Abastecimento)
+        .filter(
+            Abastecimento.cliente_id == cliente_id,
+            Abastecimento.data >= data_inicial,
+            Abastecimento.data <= data_final,
+        )
+    )
+    if veiculo_id:
+        q = q.filter(Abastecimento.veiculo_id == veiculo_id)
+    registros = q.order_by(Abastecimento.data.desc()).all()
+
+    total_valor = sum(float(r.valor) for r in registros)
+    total_litros = sum(float(r.quantidade) for r in registros)
+    total_registros = len(registros)
+
+    # ranking por veículo
+    rv_q = (
+        db.session.query(
+            Veiculo.placa,
+            Veiculo.modelo,
+            func.count(Abastecimento.id).label('qtd'),
+            func.sum(Abastecimento.quantidade).label('total_litros'),
+            func.sum(Abastecimento.valor).label('total_valor'),
+        )
+        .join(Abastecimento, Abastecimento.veiculo_id == Veiculo.id)
+        .filter(
+            Abastecimento.cliente_id == cliente_id,
+            Abastecimento.data >= data_inicial,
+            Abastecimento.data <= data_final,
+        )
+    )
+    if veiculo_id:
+        rv_q = rv_q.filter(Veiculo.id == veiculo_id)
+    ranking_veiculo = rv_q.group_by(Veiculo.placa, Veiculo.modelo).order_by(func.sum(Abastecimento.valor).desc()).all()
+
+    # ranking por tipo de combustível
+    rc_q = (
+        db.session.query(
+            Abastecimento.tipo_combustivel,
+            func.count(Abastecimento.id).label('qtd'),
+            func.sum(Abastecimento.quantidade).label('total_litros'),
+            func.sum(Abastecimento.valor).label('total_valor'),
+        )
+        .filter(
+            Abastecimento.cliente_id == cliente_id,
+            Abastecimento.data >= data_inicial,
+            Abastecimento.data <= data_final,
+        )
+    )
+    if veiculo_id:
+        rc_q = rc_q.filter(Abastecimento.veiculo_id == veiculo_id)
+    ranking_combustivel = rc_q.group_by(Abastecimento.tipo_combustivel).order_by(func.sum(Abastecimento.valor).desc()).all()
+
+    veiculos = Veiculo.query.filter_by(cliente_id=cliente_id, ativo=True).order_by(Veiculo.placa).all()
+
+    return dict(
+        registros=registros,
+        veiculos=veiculos,
+        ranking_veiculo=ranking_veiculo,
+        ranking_combustivel=ranking_combustivel,
+        total_valor=total_valor,
+        total_litros=total_litros,
+        total_registros=total_registros,
+        data_inicial=data_inicial,
+        data_final=data_final,
+        veiculo_id=veiculo_id,
+    )
+
+
+@abastecimento_bp.route('/relatorio')
+@login_required
+@cliente_required
+@menu_required('abastecimento')
+def relatorio():
+    dados = _dados_relatorio(session['cliente_id'])
+    return render_template('abastecimento/relatorio.html', **dados)
+
+
+@abastecimento_bp.route('/relatorio/imprimir')
+@login_required
+@cliente_required
+@menu_required('abastecimento')
+def relatorio_imprimir():
+    cliente_id = session['cliente_id']
+    dados = _dados_relatorio(cliente_id)
+    cliente = Cliente.query.get(cliente_id)
+    return render_template(
+        'abastecimento/relatorio_imprimir.html',
+        **dados,
+        cliente=cliente,
+        agora=datetime.now(),
+    )
+
